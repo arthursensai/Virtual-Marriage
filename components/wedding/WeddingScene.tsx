@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
-import { WeddingScene, type ReactKind } from '@/lib/scene';
+import { WeddingScene, type ReactKind } from '@/lib/scene2d';
 import type { Ceremony, GuestInfo, Look, Pos } from '@/lib/types';
 
 export interface StageHandle {
@@ -94,15 +94,15 @@ export default function Stage(p: Props) {
     return (
       <div className="center-msg">
         <div>
-          <h2>المتصفح لا يدعم العرض ثلاثي الأبعاد</h2>
-          <p>جرّب متصفحًا حديثًا أو فعّل تسريع الرسوميات (WebGL).</p>
+          <h2>تعذّر تشغيل مشهد الحفل</h2>
+          <p>جرّب متصفحًا حديثًا أو أعد تحميل الصفحة.</p>
         </div>
       </div>
     );
   }
   return (
     <div className="stage">
-      <canvas ref={canvasRef} aria-label="مشهد ثلاثي الأبعاد لحفل الزفاف" />
+      <canvas ref={canvasRef} aria-label="مشهد الحفل من الأعلى" />
     </div>
   );
 }
