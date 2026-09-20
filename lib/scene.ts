@@ -1,20 +1,38 @@
 import * as THREE from 'three';
 import type { Look } from './types';
 import { M, add, attachLabel, buildPerson, disposeObj, type Person } from './characters';
-import { clamp, lerp, rng, ss } from './util';
+import { clamp, hash, lerp, rng, ss } from './util';
+import { BOUNDS, buildWorld, groundY, type Obstacle } from './world';
 
 // نحافظ على ألوان المشهد كما صُمّمت (بدون إدارة ألوان جديدة)
 THREE.ColorManagement.enabled = false;
 
 export type ReactKind = 'clap' | 'heart' | 'cheer';
+export interface Pos {
+  x: number;
+  z: number;
+  r: number;
+}
 export interface SceneActor {
   name: string;
   look: Look;
+  pos?: Pos;
 }
 export interface SceneGuest {
   id: string;
   name: string;
   look: Look;
+  pos?: Pos;
+}
+interface Ent {
+  x: number;
+  z: number;
+  tx: number;
+  tz: number;
+  rot: number;
+  trot: number;
+  moving: boolean;
+  seen: number;
 }
 export interface SceneCeremony {
   round: number;
@@ -23,7 +41,14 @@ export interface SceneCeremony {
 }
 export interface SceneOptions {
   onStep?: (step: number, late: boolean) => void;
+  /** يُستدعى لحركة اللاعب المحلي (≈8 مرات/ث أثناء الحركة، ومرة عند التوقف) */
+  onMove?: (x: number, z: number, r: number, moving: boolean) => void;
 }
+
+const SPEED = 3.4;
+const PLAYER_R = 0.28;
+const SEND_MS = 120;
+const angDiff = (a: number, b: number) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
 
 export const WALK_MS = 7000;
 export const MAX_GUESTS = 20;
@@ -60,7 +85,7 @@ export class WeddingScene {
   private opts: SceneOptions;
   private renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
-  private camera = new THREE.PerspectiveCamera(45, 1, 0.1, 300);
+  private camera = new THREE.PerspectiveCamera(40, 1, 0.1, 300);
   private hemi = new THREE.HemisphereLight(0xaab8ff, 0x1d2440, 0.6);
   private sun = new THREE.DirectionalLight(0xb8c6ff, 0.8);
   private warm = new THREE.PointLight(0xffb066, 1, 10, 1);
@@ -73,9 +98,20 @@ export class WeddingScene {
   private actors: { groom: Person | null; bride: Person | null } = { groom: null, bride: null };
   private actorKey = { groom: '', bride: '' };
   private guests = new Map<string, { key: string; p: Person }>();
-  private guestOrder: string[] = [];
   private guestsG = new THREE.Group();
   private clapUntil = new Map<string, number>();
+
+  /* حركة اللاعبين: id = 'groom' | 'bride' | معرّف الضيف */
+  private ents = new Map<string, Ent>();
+  private localId: string | null = null;
+  private input = { x: 0, y: 0 };
+  private keys = { u: 0, d: 0, l: 0, r: 0 };
+  private obstacles: Obstacle[] = [];
+  private signs: THREE.Sprite[] = [];
+  private worldAnim: (t: number) => void = () => {};
+  private ring!: THREE.Mesh;
+  private lastSend = 0;
+  private wasMoving = false;
 
   private ceremony: SceneCeremony | null = null;
   private lastKey = '';
@@ -109,6 +145,14 @@ export class WeddingScene {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     this.buildSet();
+    const world = buildWorld(this.scene);
+    this.obstacles = world.obstacles;
+    this.signs = world.signs;
+    this.worldAnim = world.animate;
+    this.ring = new THREE.Mesh(new THREE.RingGeometry(0.36, 0.46, 32), new THREE.MeshBasicMaterial({ color: 0xffd166, side: THREE.DoubleSide, transparent: true, opacity: 0.9 }));
+    this.ring.rotation.x = -Math.PI / 2;
+    this.ring.visible = false;
+    this.scene.add(this.ring);
     this.scene.add(this.guestsG);
     this.buildFx();
     this.setNight(true);
@@ -124,14 +168,14 @@ export class WeddingScene {
     scene.add(this.hemi);
     this.sun.position.set(-10, 16, 10);
     this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(1024, 1024);
+    this.sun.shadow.mapSize.set(2048, 2048);
     const sc = this.sun.shadow.camera;
-    sc.left = -9;
-    sc.right = 9;
-    sc.top = 9;
-    sc.bottom = -9;
+    sc.left = -14;
+    sc.right = 14;
+    sc.top = 14;
+    sc.bottom = -14;
     sc.near = 1;
-    sc.far = 50;
+    sc.far = 60;
     scene.add(this.sun);
     this.warm.position.set(0, 2.4, 0.8);
     scene.add(this.warm);
@@ -319,7 +363,11 @@ export class WeddingScene {
       disposeObj(old.root);
     }
     const p = buildPerson(a.look);
-    attachLabel(p, a.name, 2.2);
+    attachLabel(p, a.name, 2.2, 1, true);
+    if (!this.ents.has(role)) {
+      const sp = a.pos ?? { x: role === 'groom' ? -0.85 : 0.85, z: -0.5, r: role === 'groom' ? 0.25 : -0.25 };
+      this.ents.set(role, { x: sp.x, z: sp.z, tx: sp.x, tz: sp.z, rot: sp.r, trot: sp.r, moving: false, seen: 0 });
+    }
     if (pos) {
       p.root.position.copy(pos);
       p.root.rotation.y = rot;
@@ -354,14 +402,128 @@ export class WeddingScene {
       });
       this.guestsG.add(p.root);
       this.guests.set(g.id, { key, p });
+      if (cur) p.root.position.copy(cur.p.root.position);
     });
-    this.guestOrder = shown.map((g) => g.id);
-    this.guestOrder.forEach((id, i) => {
-      const { x, z, side } = slotPos(i);
-      const p = this.guests.get(id)!.p;
-      p.root.position.set(x, 0, z);
-      p.root.rotation.y = side < 0 ? Math.PI / 2 - 0.15 : -Math.PI / 2 + 0.15;
+    shown.forEach((g) => {
+      if (this.ents.has(g.id)) return;
+      const h = hash(g.id);
+      const sp = g.pos ?? { x: ((h % 9) - 4) * 0.45, z: 11.6 + ((h >> 4) % 3) * 0.7, r: Math.PI };
+      this.ents.set(g.id, { x: sp.x, z: sp.z, tx: sp.x, tz: sp.z, rot: sp.r, trot: sp.r, moving: false, seen: 0 });
     });
+    const keep = new Set<string>(['groom', 'bride', ...shown.map((g) => g.id)]);
+    for (const id of Array.from(this.ents.keys())) if (!keep.has(id)) this.ents.delete(id);
+    if (this.localId && !this.ents.has(this.localId)) this.localId = null;
+  }
+
+  /* ---------- التحكم بالحركة ---------- */
+  setLocal(id: string | null) {
+    this.localId = id;
+    this.ring.visible = !!id;
+  }
+  setInput(x: number, y: number) {
+    this.input.x = x;
+    this.input.y = y;
+  }
+  remotePos(id: string, x: number, z: number, r: number, moving: boolean) {
+    const e = this.ents.get(id);
+    if (!e || id === this.localId) return;
+    e.tx = clamp(x, BOUNDS.minX, BOUNDS.maxX);
+    e.tz = clamp(z, BOUNDS.minZ, BOUNDS.maxZ);
+    e.trot = r;
+    e.moving = moving;
+    e.seen = performance.now();
+    if (Math.hypot(e.tx - e.x, e.tz - e.z) > 6) {
+      e.x = e.tx;
+      e.z = e.tz;
+    }
+  }
+
+  private scripted(id: string) {
+    return (id === 'groom' || id === 'bride') && !!this.ceremony && this.ceremony.step >= 0;
+  }
+
+  private collide(x: number, z: number) {
+    let nx = clamp(x, BOUNDS.minX, BOUNDS.maxX);
+    let nz = clamp(z, BOUNDS.minZ, BOUNDS.maxZ);
+    for (const o of this.obstacles) {
+      const dx = nx - o.x;
+      const dz = nz - o.z;
+      const d = Math.hypot(dx, dz);
+      const min = o.r + PLAYER_R;
+      if (d < min && d > 1e-4) {
+        nx = o.x + (dx / d) * min;
+        nz = o.z + (dz / d) * min;
+      }
+    }
+    return { x: nx, z: nz };
+  }
+
+  private stepLocal(dt: number, nowP: number) {
+    const id = this.localId;
+    const e = id ? this.ents.get(id) : null;
+    if (!id || !e || this.scripted(id)) {
+      this.ring.visible = false;
+      if (this.wasMoving) {
+        this.wasMoving = false;
+      }
+      return;
+    }
+    let ix = this.input.x + this.keys.r - this.keys.l;
+    let iy = this.input.y + this.keys.u - this.keys.d;
+    const len = Math.hypot(ix, iy);
+    if (len > 1) {
+      ix /= len;
+      iy /= len;
+    }
+    const moving = len > 0.12;
+    if (moving) {
+      const th = this.cam.theta;
+      const vx = Math.cos(th) * ix + -Math.sin(th) * iy;
+      const vz = -Math.sin(th) * ix + -Math.cos(th) * iy;
+      const sp = SPEED * Math.min(1, len);
+      const c = this.collide(e.x + vx * sp * dt, e.z + vz * sp * dt);
+      e.x = c.x;
+      e.z = c.z;
+      e.trot = Math.atan2(vx, vz);
+    }
+    e.moving = moving;
+    e.rot += angDiff(e.rot, e.trot) * (1 - Math.pow(0.0005, dt));
+    this.ring.visible = true;
+    if ((moving && nowP - this.lastSend > SEND_MS) || (!moving && this.wasMoving)) {
+      this.lastSend = nowP;
+      this.opts.onMove?.(Math.round(e.x * 100) / 100, Math.round(e.z * 100) / 100, Math.round(e.rot * 100) / 100, moving);
+    }
+    this.wasMoving = moving;
+  }
+
+  private updateEnts(dt: number, nowP: number) {
+    const k = 1 - Math.pow(0.0008, dt);
+    this.ents.forEach((e, id) => {
+      if (id === this.localId) return;
+      e.x += (e.tx - e.x) * k;
+      e.z += (e.tz - e.z) * k;
+      e.rot += angDiff(e.rot, e.trot) * k;
+      if (e.moving && nowP - e.seen > 450) e.moving = false;
+    });
+  }
+
+  private applyEnt(id: string, root: THREE.Object3D) {
+    const e = this.ents.get(id);
+    if (!e) return;
+    root.position.set(e.x, groundY(e.x, e.z), e.z);
+    root.rotation.y = e.rot;
+  }
+
+  private updateLabels() {
+    const f = clamp(this.cam.r / 11, 0.85, 3);
+    const scaleLabel = (sp: THREE.Sprite | null) => {
+      const s0 = sp?.userData.s0 as THREE.Vector3 | undefined;
+      if (sp && s0) sp.scale.set(s0.x * f, s0.y * f, 1);
+    };
+    scaleLabel(this.actors.groom?.label ?? null);
+    scaleLabel(this.actors.bride?.label ?? null);
+    this.guests.forEach(({ p }) => scaleLabel(p.label));
+    this.signs.forEach((sp) => scaleLabel(sp));
   }
 
   setCeremony(c: SceneCeremony | null) {
@@ -425,7 +587,7 @@ export class WeddingScene {
       case 6:
         return { theta: 0, phi: 1.3, r: R(4.4), tx: 0, ty: 1.35, tz: -0.5 };
       default:
-        return { theta: this.cam.base, phi: 1.36, r: R(5.2), tx: 0, ty: 1.15, tz: -0.5 };
+        return { theta: 0, phi: 0.82, r: R(21), tx: 0, ty: 0.4, tz: 4.2 };
     }
   }
   private applyGoal(g: Goal) {
@@ -434,8 +596,7 @@ export class WeddingScene {
   }
   private updateCam(dt: number, nowP: number) {
     const c = this.cam;
-    const lobby = !this.ceremony || this.ceremony.step < 0;
-    if (lobby && nowP - c.last > 3000) this.g.theta = c.base + Math.sin(nowP / 4200) * 0.38;
+    void nowP;
     const k = 1 - Math.pow(0.03, dt);
     (['theta', 'phi', 'r', 'tx', 'ty', 'tz'] as const).forEach((key) => {
       c[key] += (this.g[key] - c[key]) * k;
@@ -468,7 +629,7 @@ export class WeddingScene {
         const [a, b] = Array.from(pts.values());
         const d = Math.hypot(a.x - b.x, a.y - b.y);
         if (pinch) {
-          c.r = clamp(c.r * (pinch / d), 2.6, 18);
+          c.r = clamp(c.r * (pinch / d), 4, 34);
           this.g.r = c.r;
         }
         pinch = d;
@@ -484,10 +645,29 @@ export class WeddingScene {
     };
     const wheel = (e: WheelEvent) => {
       e.preventDefault();
-      this.cam.r = clamp(this.cam.r * (1 + e.deltaY * 0.001), 2.6, 18);
+      this.cam.r = clamp(this.cam.r * (1 + e.deltaY * 0.001), 4, 34);
       this.g.r = this.cam.r;
       this.cam.last = performance.now();
     };
+    const keyMap: Record<string, 'u' | 'd' | 'l' | 'r'> = {
+      KeyW: 'u', ArrowUp: 'u', KeyS: 'd', ArrowDown: 'd', KeyA: 'l', ArrowLeft: 'l', KeyD: 'r', ArrowRight: 'r',
+    };
+    const key = (v: number) => (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      const k = keyMap[e.code];
+      if (!k) return;
+      this.keys[k] = v;
+      e.preventDefault();
+    };
+    const kd = key(1);
+    const ku = key(0);
+    const blur = () => {
+      this.keys = { u: 0, d: 0, l: 0, r: 0 };
+    };
+    window.addEventListener('keydown', kd);
+    window.addEventListener('keyup', ku);
+    window.addEventListener('blur', blur);
     cv.addEventListener('pointerdown', down);
     cv.addEventListener('pointermove', move);
     cv.addEventListener('pointerup', up);
@@ -499,6 +679,9 @@ export class WeddingScene {
       cv.removeEventListener('pointerup', up);
       cv.removeEventListener('pointercancel', up);
       cv.removeEventListener('wheel', wheel);
+      window.removeEventListener('keydown', kd);
+      window.removeEventListener('keyup', ku);
+      window.removeEventListener('blur', blur);
     });
   }
 
@@ -595,14 +778,16 @@ export class WeddingScene {
     const g = this.actors.groom;
     const b = this.actors.bride;
     let walking = false;
+    let walkG = false;
+    let walkB = false;
     let clap = false;
     let speaker: 'groom' | 'bride' | null = null;
     if (g && b) {
       if (step < 0) {
-        g.root.position.set(-0.85, 0.12, -0.5);
-        b.root.position.set(0.85, 0.12, -0.5);
-        g.root.rotation.y = 0.25;
-        b.root.rotation.y = -0.25;
+        this.applyEnt('groom', g.root);
+        this.applyEnt('bride', b.root);
+        walkG = !!this.ents.get('groom')?.moving;
+        walkB = !!this.ents.get('bride')?.moving;
       } else if (step === 0) {
         const tt = clamp(el / WALK_MS, 0, 1);
         const e = tt < 0.5 ? 2 * tt * tt : 1 - Math.pow(-2 * tt + 2, 2) / 2;
@@ -626,20 +811,21 @@ export class WeddingScene {
         if (step === 3) speaker = Math.floor(el / 2600) % 2 ? 'bride' : 'groom';
         clap = step === 5;
       }
-      animPerson(g, t, walking);
-      animPerson(b, t, walking);
+      animPerson(g, t, walking || walkG);
+      animPerson(b, t, walking || walkB);
       g.head.rotation.x = speaker === 'groom' ? Math.sin(t * 9) * 0.06 : 0;
       b.head.rotation.x = speaker === 'bride' ? Math.sin(t * 9) * 0.06 : 0;
     }
     this.guests.forEach(({ p }, id) => {
-      p.body.position.y = Math.sin(t * 1.5 + p.phase) * 0.01;
+      this.applyEnt(id, p.root);
+      const moving = !!this.ents.get(id)?.moving;
+      animPerson(p, t, moving);
       const clapping = clap || (this.clapUntil.get(id) ?? 0) > nowP;
       p.arms.forEach((a) => {
         if (clapping) {
           a.rotation.x = -1.05;
           a.rotation.z = -a.userData.s * (0.2 + (Math.sin(t * 14 + p.phase) * 0.5 + 0.5) * 0.35);
         } else {
-          a.rotation.x = a.userData.rx;
           a.rotation.z = a.userData.base;
         }
       });
@@ -650,9 +836,15 @@ export class WeddingScene {
     this.raf = requestAnimationFrame(this.tick);
     const dt = Math.min(this.clock.getDelta(), 0.05);
     const nowP = performance.now();
+    this.stepLocal(dt, nowP);
+    this.updateEnts(dt, nowP);
     this.updateCeremony(nowP / 1000, Date.now(), nowP);
     this.updateFx(dt);
+    this.worldAnim(nowP / 1000);
     this.updateCam(dt, nowP);
+    this.updateLabels();
+    const le = this.localId ? this.ents.get(this.localId) : null;
+    if (le && this.ring.visible) this.ring.position.set(le.x, groundY(le.x, le.z) + 0.03, le.z);
     this.renderer.render(this.scene, this.camera);
   };
 }

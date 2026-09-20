@@ -112,7 +112,7 @@ export interface Person {
   label: THREE.Sprite | null;
 }
 
-export function makeLabel(text: string): THREE.Sprite {
+export function makeLabel(text: string, gold = false): THREE.Sprite {
   const c = document.createElement('canvas');
   c.width = 320;
   c.height = 84;
@@ -127,7 +127,12 @@ export function makeLabel(text: string): THREE.Sprite {
   x.arc(rx + r, ry + r, r, Math.PI / 2, Math.PI * 1.5);
   x.closePath();
   x.fill();
-  x.fillStyle = '#fff';
+  if (gold) {
+    x.strokeStyle = '#d8b55a';
+    x.lineWidth = 3;
+    x.stroke();
+  }
+  x.fillStyle = gold ? '#ffe9a8' : '#fff';
   x.font = '700 32px Tajawal, Tahoma, sans-serif';
   x.textAlign = 'center';
   x.textBaseline = 'middle';
@@ -137,14 +142,15 @@ export function makeLabel(text: string): THREE.Sprite {
   return sp;
 }
 
-export function attachLabel(p: Person, text: string, y: number, scale = 1) {
+export function attachLabel(p: Person, text: string, y: number, scale = 1, gold = false) {
   if (p.label) {
     p.root.remove(p.label);
     disposeObj(p.label);
   }
-  p.label = makeLabel(text);
+  p.label = makeLabel(text, gold);
   p.label.position.set(0, y, 0);
   p.label.scale.multiplyScalar(scale);
+  p.label.userData.s0 = p.label.scale.clone();
   p.root.add(p.label);
 }
 

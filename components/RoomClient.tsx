@@ -3,12 +3,13 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import LookPanel from './LookPanel';
+import Joystick from './Joystick';
 import type { StageHandle } from './Stage';
 import { DEFAULT_LOOKS, cloneLook, guestLook } from '@/lib/characters';
 import { derive } from '@/lib/derive';
 import { WALK_MS, type ReactKind } from '@/lib/scene';
 import { chime, ding, setSound, unlockAudio } from '@/lib/sound';
-import type { BrideProxy, ChatMsg, Ceremony, Gates, Look, Presence, Role } from '@/lib/types';
+import type { BrideProxy, ChatMsg, Ceremony, Gates, Look, Pos, Presence, Role } from '@/lib/types';
 import { useRoom } from '@/lib/useRoom';
 import { makeCode } from '@/lib/util';
 import { useUser } from '@/lib/auth';
@@ -113,7 +114,8 @@ function Room({ code, me }: { code: string; me: Me }) {
   const [myGates, setMyGates] = useState<Gates>({ a: false, s: false, round: 0 });
   const [loaded, setLoaded] = useState(false);
   const [tab, setTab] = useState<'me' | 'bride' | 'party'>('me');
-  const [panelOpen, setPanelOpen] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [myPos, setMyPos] = useState<Pos | undefined>(undefined);
   const [chatOpen, setChatOpen] = useState(false);
   const chatOpenRef = useRef(false);
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
@@ -168,8 +170,9 @@ function Room({ code, me }: { code: string; me: Me }) {
       joinedAt: joinedAt.current,
       ...(role === 'groom' ? { ceremony: cer, gates: myGates, proxy } : {}),
       ...(role === 'bride' ? { gates: myGates } : {}),
+      ...(myPos ? { pos: myPos } : {}),
     }),
-    [id, role, name, look, vow, cer, myGates, proxy],
+    [id, role, name, look, vow, cer, myGates, proxy, myPos],
   );
   useEffect(() => {
     if (loaded) roomUpdate(mine);
@@ -200,6 +203,27 @@ function Room({ code, me }: { code: string; me: Me }) {
     [room.peers, id, mine, roster],
   );
   const view = useMemo(() => derive(all), [all]);
+
+  /* ---- الحركة: من أتحكم به، وإرسال موضعي واستقبال مواضع الآخرين (مؤقتة عبر Broadcast) ---- */
+  const localId = role === 'guest' ? id : role;
+  const onMove = useCallback(
+    (x: number, z: number, r: number, m: boolean) => {
+      roomSend('pos', { id, x, z, r, m });
+      if (!m) setMyPos({ x, z, r });
+    },
+    [roomSend, id],
+  );
+  const rosterRef = useRef(roster);
+  rosterRef.current = roster;
+  useEffect(() => {
+    roomOn('pos', (pl) => {
+      const q = pl as { id: string; x: number; z: number; r: number; m: boolean };
+      if (!q || q.id === id || typeof q.x !== 'number' || typeof q.z !== 'number') return;
+      const r = rosterRef.current[q.id];
+      if (!r) return;
+      stageRef.current?.remotePos(r === 'guest' ? q.id : r, q.x, q.z, q.r, !!q.m);
+    });
+  }, [roomOn, id]);
   const ceremony = view.ceremony;
   const step = ceremony?.step ?? -1;
   const round = ceremony?.round ?? 0;
@@ -336,8 +360,10 @@ function Room({ code, me }: { code: string; me: Me }) {
   return (
     <div className="app" onPointerDown={unlockAudio}>
       <Stage
-        groom={{ name: view.groom.name, look: view.groom.look }}
-        bride={{ name: view.bride.name, look: view.bride.look }}
+        groom={{ name: `${view.groom.name} 🤵`, look: view.groom.look, pos: view.groom.pos }}
+        bride={{ name: `${view.bride.name} 👰`, look: view.bride.look, pos: view.bride.pos }}
+        localId={localId}
+        onMove={onMove}
         guests={view.guests}
         ceremony={ceremony}
         night={night}
@@ -519,6 +545,8 @@ function Room({ code, me }: { code: string; me: Me }) {
           <button onClick={() => react('cheer')} aria-label="احتفال">🎉</button>
         </div>
       )}
+
+      {room.status === 'online' && !panelOpen && !chatOpen && !inCeremony && <Joystick onChange={(x, y) => stageRef.current?.setInput(x, y)} />}
 
       {chatOpen && <Chat msgs={msgs} onSend={sendChat} onClose={() => setChatOpen(false)} />}
 

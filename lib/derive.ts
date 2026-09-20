@@ -26,12 +26,12 @@ export function derive(all: Presence[]): RoomView {
   const round = ceremony?.round ?? 0;
 
   const groom: PersonView = groomP
-    ? { name: groomP.name || 'العريس', look: groomP.look, vow: groomP.vow ?? '', gates: gatesOf(groomP.gates, round) }
+    ? { name: groomP.name || 'العريس', look: groomP.look, vow: groomP.vow ?? '', gates: gatesOf(groomP.gates, round), pos: groomP.pos }
     : { name: 'العريس', look: DEFAULT_LOOKS.groom as Look, vow: '', gates: { a: false, s: false } };
 
   let bride: PersonView;
   if (brideP) {
-    bride = { name: brideP.name || 'العروس', look: brideP.look, vow: brideP.vow ?? '', gates: gatesOf(brideP.gates, round) };
+    bride = { name: brideP.name || 'العروس', look: brideP.look, vow: brideP.vow ?? '', gates: gatesOf(brideP.gates, round), pos: brideP.pos };
   } else if (groomP?.proxy) {
     const px = groomP.proxy;
     bride = { name: px.name || 'العروس', look: px.look, vow: px.vow, gates: gatesOf(px.gates, round) };
@@ -45,7 +45,7 @@ export function derive(all: Presence[]): RoomView {
     brideOnline: !!brideP,
     groom,
     bride,
-    guests: guestsP.map((p) => ({ id: p.id, name: p.name || 'ضيف', look: p.look })),
+    guests: guestsP.map((p) => ({ id: p.id, name: p.name || 'ضيف', look: p.look, pos: p.pos })),
     count: all.length,
   };
 }

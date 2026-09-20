@@ -32,6 +32,13 @@ export interface BrideProxy {
   gates: Gates;
 }
 
+/** موضع اللاعب على الخريطة (يُحفظ في Presence عند التوقف فقط، لا في قاعدة البيانات) */
+export interface Pos {
+  x: number;
+  z: number;
+  r: number;
+}
+
 export interface Presence {
   id: string;
   role: Role;
@@ -42,11 +49,13 @@ export interface Presence {
   ceremony?: Ceremony;
   gates?: Gates;
   proxy?: BrideProxy;
+  pos?: Pos;
 }
 
 export interface PersonView {
   name: string;
   look: Look;
+  pos?: Pos;
   vow: string;
   gates: { a: boolean; s: boolean };
 }
@@ -55,6 +64,7 @@ export interface GuestInfo {
   id: string;
   name: string;
   look: Look;
+  pos?: Pos;
 }
 
 export interface ChatMsg {

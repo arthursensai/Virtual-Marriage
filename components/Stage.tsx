@@ -1,14 +1,19 @@
 'use client';
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { WeddingScene, type ReactKind } from '@/lib/scene';
-import type { Ceremony, GuestInfo, Look } from '@/lib/types';
+import type { Ceremony, GuestInfo, Look, Pos } from '@/lib/types';
 
 export interface StageHandle {
   react: (id: string, kind: ReactKind) => void;
+  remotePos: (id: string, x: number, z: number, r: number, moving: boolean) => void;
+  setInput: (x: number, y: number) => void;
 }
 interface Props {
-  groom: { name: string; look: Look };
-  bride: { name: string; look: Look };
+  groom: { name: string; look: Look; pos?: Pos };
+  bride: { name: string; look: Look; pos?: Pos };
+  /** 'groom' | 'bride' | معرّف الضيف: من أتحكم به */
+  localId: string | null;
+  onMove: (x: number, z: number, r: number, moving: boolean) => void;
   guests: GuestInfo[];
   ceremony: Ceremony | null;
   night: boolean;
@@ -22,6 +27,8 @@ export default function Stage(p: Props) {
   const sceneRef = useRef<WeddingScene | null>(null);
   const onStepRef = useRef(p.onStep);
   onStepRef.current = p.onStep;
+  const onMoveRef = useRef(p.onMove);
+  onMoveRef.current = p.onMove;
   const [failed, setFailed] = useState(false);
   const { handleRef } = p;
 
@@ -30,13 +37,17 @@ export default function Stage(p: Props) {
     if (!cv) return;
     let sc: WeddingScene;
     try {
-      sc = new WeddingScene(cv, { onStep: (s, l) => onStepRef.current(s, l) });
+      sc = new WeddingScene(cv, { onStep: (s, l) => onStepRef.current(s, l), onMove: (x, z, r, m) => onMoveRef.current(x, z, r, m) });
     } catch {
       setFailed(true);
       return;
     }
     sceneRef.current = sc;
-    handleRef.current = { react: (id, k) => sc.react(id, k) };
+    handleRef.current = {
+      react: (id, k) => sc.react(id, k),
+      remotePos: (id, x, z, r, m) => sc.remotePos(id, x, z, r, m),
+      setInput: (x, y) => sc.setInput(x, y),
+    };
     const ro = new ResizeObserver(() => sc.resize());
     if (cv.parentElement) ro.observe(cv.parentElement);
     return () => {
@@ -68,6 +79,10 @@ export default function Stage(p: Props) {
     sceneRef.current?.setCeremony(p.ceremony);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ck]);
+  useEffect(() => {
+    sceneRef.current?.setLocal(p.localId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.localId, gsk]);
   useEffect(() => {
     sceneRef.current?.setNight(p.night);
   }, [p.night]);

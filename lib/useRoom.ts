@@ -10,7 +10,7 @@ type Handler = (payload: unknown) => void;
 /**
  * غرفة الحفل: تعتمد على Supabase Realtime (Presence + Broadcast) فقط، بدون جداول.
  * - Presence: يحمل حالة كل مشارك (المظهر، الاسم، وحالة الحفل عند العريس).
- * - Broadcast: للتفاعلات السريعة (تصفيق، قلوب) والرسائل.
+ * - Broadcast: للتفاعلات السريعة (تصفيق، قلوب) والرسائل وحركة اللاعبين (pos) — مؤقتة ولا تُحفظ.
  */
 export function useRoom(code: string, id: string) {
   const [peers, setPeers] = useState<Presence[]>([]);
@@ -43,6 +43,7 @@ export function useRoom(code: string, id: string) {
     ch.on('presence', { event: 'sync' }, sync);
     ch.on('broadcast', { event: 'react' }, ({ payload }) => handlers.current.react?.(payload));
     ch.on('broadcast', { event: 'chat' }, ({ payload }) => handlers.current.chat?.(payload));
+    ch.on('broadcast', { event: 'pos' }, ({ payload }) => handlers.current.pos?.(payload));
     ch.subscribe(async (s) => {
       if (s === 'SUBSCRIBED') {
         ready.current = true;
@@ -69,11 +70,11 @@ export function useRoom(code: string, id: string) {
     }, 120);
   }, []);
 
-  const send = useCallback((event: 'react' | 'chat', payload: unknown) => {
+  const send = useCallback((event: 'react' | 'chat' | 'pos', payload: unknown) => {
     void chRef.current?.send({ type: 'broadcast', event, payload });
   }, []);
 
-  const on = useCallback((event: 'react' | 'chat', fn: Handler) => {
+  const on = useCallback((event: 'react' | 'chat' | 'pos', fn: Handler) => {
     handlers.current[event] = fn;
   }, []);
 
