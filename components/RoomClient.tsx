@@ -1,6 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import LookPanel from './LookPanel';
 import type { StageHandle } from './Stage';
@@ -10,7 +10,10 @@ import { WALK_MS, type ReactKind } from '@/lib/scene';
 import { chime, ding, setSound, unlockAudio } from '@/lib/sound';
 import type { BrideProxy, ChatMsg, Ceremony, Gates, Look, Presence, Role } from '@/lib/types';
 import { useRoom } from '@/lib/useRoom';
-import { clientId, makeCode } from '@/lib/util';
+import { makeCode } from '@/lib/util';
+import { useUser } from '@/lib/auth';
+import { getSupabase } from '@/lib/supabase';
+import { friendlyError, getWifeCode } from '@/lib/wedding';
 
 const Stage = dynamic(() => import('./Stage'), { ssr: false });
 
@@ -22,23 +25,83 @@ export default function RoomClient({ code }: { code: string }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!mounted) return <div className="app" />;
-  return <Room code={code} />;
+  return <Gate code={code} />;
 }
 
-function Room({ code }: { code: string }) {
-  const sp = useSearchParams();
-  const as = sp.get('as');
-  const role: Role = as === 'groom' ? 'groom' : as === 'bride' ? 'bride' : 'guest';
-  const id = useMemo(() => clientId(), []);
+interface Me {
+  userId: string;
+  weddingId: string;
+  role: Role;
+  name: string;
+  look: Look;
+}
+const toRole = (r: string): Role => (r === 'husband' ? 'groom' : r === 'wife' ? 'bride' : 'guest');
+
+/** بوّابة: تتحقق من الجلسة والعضوية من قاعدة البيانات، والدور يأتي من الخادم فقط */
+function Gate({ code }: { code: string }) {
+  const router = useRouter();
+  const user = useUser();
+  const [me, setMe] = useState<Me | null>(null);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    if (user === undefined) return;
+    if (user === null) {
+      router.replace(`/auth/login?next=${encodeURIComponent('/room/' + code)}`);
+      return;
+    }
+    const sb = getSupabase();
+    if (!sb) return;
+    let dead = false;
+    void (async () => {
+      const w = await sb.from('weddings').select('id').eq('code', code).maybeSingle();
+      if (dead) return;
+      if (w.error) return setErr(friendlyError(w.error));
+      if (!w.data) return router.replace(`/join?code=${code}`);
+      const p = await sb.from('participants').select('role,display_name,look').eq('wedding_id', w.data.id).eq('user_id', user.id).maybeSingle();
+      if (dead) return;
+      if (p.error) return setErr(friendlyError(p.error));
+      if (!p.data) return router.replace(`/join?code=${code}`);
+      const role = toRole(p.data.role);
+      const saved = p.data.look as Partial<Look> | null;
+      const base = role === 'groom' ? DEFAULT_LOOKS.groom : role === 'bride' ? DEFAULT_LOOKS.bride : guestLook(user.id);
+      setMe({
+        userId: user.id,
+        weddingId: w.data.id,
+        role,
+        name: p.data.display_name ?? '',
+        look: saved && saved.skin ? (saved as Look) : cloneLook(base),
+      });
+    })();
+    return () => {
+      dead = true;
+    };
+  }, [user, code, router]);
+
+  if (err) {
+    return (
+      <div className="center-msg">
+        <div>
+          <h2>تعذّر فتح الحفل</h2>
+          <p>{err}</p>
+        </div>
+      </div>
+    );
+  }
+  if (!me) return <div className="app" />;
+  return <Room code={code} me={me} />;
+}
+
+function Room({ code, me }: { code: string; me: Me }) {
+  const role = me.role;
+  const id = me.userId;
   const room = useRoom(code, id);
   const { update: roomUpdate, on: roomOn, send: roomSend } = room;
   const joinedAt = useRef(Date.now());
   const stageRef = useRef<StageHandle | null>(null);
 
-  const [name, setName] = useState('');
-  const [look, setLook] = useState<Look>(() =>
-    role === 'groom' ? cloneLook(DEFAULT_LOOKS.groom) : role === 'bride' ? cloneLook(DEFAULT_LOOKS.bride) : guestLook(id),
-  );
+  const [name, setName] = useState(me.name);
+  const [look, setLook] = useState<Look>(me.look);
   const [vow, setVow] = useState(role === 'groom' ? DEF_VOW_G : role === 'bride' ? DEF_VOW_B : '');
   const [proxy, setProxy] = useState<BrideProxy>({
     name: '',
@@ -66,8 +129,6 @@ function Room({ code }: { code: string }) {
     try {
       const s = JSON.parse(localStorage.getItem('vw_me_' + role) || 'null');
       if (s) {
-        if (typeof s.name === 'string') setName(s.name);
-        if (s.look) setLook(s.look);
         if (typeof s.vow === 'string') setVow(s.vow);
         if (s.proxy) setProxy((p) => ({ ...p, name: s.proxy.name ?? p.name, look: s.proxy.look ?? p.look, vow: s.proxy.vow ?? p.vow }));
       }
@@ -79,11 +140,22 @@ function Room({ code }: { code: string }) {
   useEffect(() => {
     if (!loaded) return;
     try {
-      localStorage.setItem('vw_me_' + role, JSON.stringify({ name, look, vow, proxy: { name: proxy.name, look: proxy.look, vow: proxy.vow } }));
+      localStorage.setItem('vw_me_' + role, JSON.stringify({ vow, proxy: { name: proxy.name, look: proxy.look, vow: proxy.vow } }));
     } catch {
       /* ignore */
     }
-  }, [loaded, role, name, look, vow, proxy]);
+  }, [loaded, role, vow, proxy]);
+
+  /* ---- حفظ الاسم والمظهر في قاعدة البيانات (RLS يسمح بهذين الحقلين فقط) ---- */
+  useEffect(() => {
+    if (!loaded) return;
+    const sb = getSupabase();
+    if (!sb) return;
+    const t = setTimeout(() => {
+      void sb.from('participants').update({ display_name: name.trim().slice(0, 24), look }).eq('wedding_id', me.weddingId).eq('user_id', id);
+    }, 800);
+    return () => clearTimeout(t);
+  }, [loaded, name, look, me.weddingId, id]);
 
   /* ---- بثّ حالتي للغرفة ---- */
   const mine = useMemo<Presence>(
@@ -103,7 +175,30 @@ function Room({ code }: { code: string }) {
     if (loaded) roomUpdate(mine);
   }, [loaded, mine, roomUpdate]);
 
-  const all = useMemo(() => [...room.peers.filter((p) => p.id !== id), mine], [room.peers, id, mine]);
+  /* ---- الدور الحقيقي لكل مشارك من قاعدة البيانات؛ نتجاهل الدور القادم عبر Presence ---- */
+  const [roster, setRoster] = useState<Record<string, Role>>({ [id]: role });
+  const loadRoster = useCallback(async () => {
+    const sb = getSupabase();
+    if (!sb) return;
+    const { data } = await sb.from('participants').select('user_id,role').eq('wedding_id', me.weddingId);
+    if (data) setRoster(Object.fromEntries(data.map((r) => [r.user_id as string, toRole(r.role as string)])));
+  }, [me.weddingId]);
+  useEffect(() => {
+    void loadRoster();
+  }, [loadRoster]);
+  const unknownKey = room.peers
+    .filter((p) => p.id !== id && !roster[p.id])
+    .map((p) => p.id)
+    .sort()
+    .join(',');
+  useEffect(() => {
+    if (unknownKey) void loadRoster();
+  }, [unknownKey, loadRoster]);
+
+  const all = useMemo(
+    () => [...room.peers.filter((p) => p.id !== id && roster[p.id]).map((p) => ({ ...p, role: roster[p.id] })), mine],
+    [room.peers, id, mine, roster],
+  );
   const view = useMemo(() => derive(all), [all]);
   const ceremony = view.ceremony;
   const step = ceremony?.step ?? -1;
@@ -197,7 +292,15 @@ function Room({ code }: { code: string }) {
   const sendChat = (text: string) => roomSend('chat', { id: makeCode(6), name: myName, text: text.slice(0, 160), ts: Date.now() } satisfies ChatMsg);
 
   const copy = async (kind: 'guest' | 'bride') => {
-    const url = `${window.location.origin}/room/${code}${kind === 'bride' ? '?as=bride' : ''}`;
+    let target = code;
+    if (kind === 'bride') {
+      try {
+        target = (await getWifeCode(me.weddingId)) ?? code;
+      } catch {
+        target = code;
+      }
+    }
+    const url = `${window.location.origin}/join?code=${target}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(kind === 'bride' ? 'نُسخ رابط العروس ✓' : 'نُسخ رابط الضيوف ✓');

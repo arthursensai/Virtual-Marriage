@@ -172,7 +172,8 @@ begin
   end if;
 
   insert into public.participants (wedding_id, user_id, role, display_name, look)
-    values (w.id, auth.uid(), r, left(coalesce(p_display_name, ''), 24), coalesce(p_look, '{}'::jsonb));
+    values (w.id, auth.uid(), r, left(coalesce(p_display_name, ''), 24),
+            case when r = 'wife' then '{}'::jsonb else coalesce(p_look, '{}'::jsonb) end);
   return json_build_object('id', w.id, 'code', w.code, 'role', r);
 end $$;
 
