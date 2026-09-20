@@ -40,10 +40,16 @@
 
 ## بنية المشروع
 ```
-app/                 صفحات Next.js (الرئيسية + /room/[code])
-components/          واجهة الغرفة (RoomClient) والمشهد (Stage) ولوحة المظهر
-lib/scene.ts         مشهد three.js: القاعة، القوس، الكاميرا، حركة الحفل
+app/wedding/[code]   صفحة الحفل (وأي رابط قديم /room/[code] يحوّل إليها)
+app/auth, create, join   الدخول والتسجيل وإنشاء الحفل والانضمام
+components/wedding/  WeddingGate (الجلسة والعضوية) · WeddingRoom · WeddingHUD · WeddingChat
+                     WeddingControls · Joystick · WeddingScene (غلاف three.js) · Certificate
+components/avatar/   AvatarCustomizer (تخصيص المظهر)
+features/chat/       useChat: دردشة محفوظة في messages + Realtime
+lib/scene.ts         مشهد three.js: الكاميرا، الحركة، التصادم، الحفل
+lib/world.ts         الساحة: الكراسي، الرقص، الكعكة، الهدايا، النافورة، التصوير
 lib/characters.ts    بناء الشخصيات والأزياء والإكسسوارات
-lib/useRoom.ts       الاتصال بـ Supabase Realtime (Presence/Broadcast)
-lib/derive.ts        بناء الحالة المشتركة من حالة المشاركين
+lib/useRoom.ts       Supabase Realtime (Presence/Broadcast)
+lib/wedding.ts       دوال الخادم: إنشاء/انضمام/حالة الحفل
+supabase/            migration.sql (+ ملفات التحديث)
 ```

@@ -30,7 +30,7 @@ export default function EntryForm({ mode, presetCode = '' }: { mode: 'create' | 
         mode === 'create'
           ? await createWedding(n, cloneLook(DEFAULT_LOOKS.groom))
           : await joinWedding(code, n, guestLook(user?.id ?? clientId()));
-      router.push(`/room/${res.code}`);
+      router.push(`/wedding/${res.code}`);
     } catch (x) {
       setErr(friendlyError(x));
       setBusy(false);

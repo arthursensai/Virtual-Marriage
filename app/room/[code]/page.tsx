@@ -1,10 +1,6 @@
-import { Suspense } from 'react';
-import RoomClient from '@/components/RoomClient';
+import { redirect } from 'next/navigation';
 
-export default function RoomPage({ params }: { params: { code: string } }) {
-  return (
-    <Suspense fallback={null}>
-      <RoomClient code={params.code.toUpperCase()} />
-    </Suspense>
-  );
+/** رابط قديم: المسار الرسمي الآن /wedding/[code] */
+export default function LegacyRoom({ params }: { params: { code: string } }) {
+  redirect(`/wedding/${params.code.toUpperCase()}`);
 }
