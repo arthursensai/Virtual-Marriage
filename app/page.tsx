@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase';
-import { makeCode } from '@/lib/util';
 
 export default function Home() {
   const router = useRouter();
@@ -14,13 +13,12 @@ export default function Home() {
   }, []);
 
   const create = () => {
-    const c = makeCode();
-    router.push(`/room/${c}?as=groom`);
+    router.push('/create');
   };
   const join = (e: React.FormEvent) => {
     e.preventDefault();
     const c = code.trim().toUpperCase();
-    if (c.length >= 4) router.push(`/room/${c}`);
+    if (c.length >= 4) router.push(`/join?code=${encodeURIComponent(c)}`);
   };
 
   return (
