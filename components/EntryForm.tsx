@@ -1,6 +1,8 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { getSupabase } from '@/lib/supabase';
 import { useUser } from '@/lib/auth';
 import { guestLook, cloneLook, DEFAULT_LOOKS } from '@/lib/characters';
 import { createWedding, joinWedding, friendlyError } from '@/lib/wedding';
@@ -14,7 +16,15 @@ export default function EntryForm({ mode, presetCode = '' }: { mode: 'create' | 
   const [code, setCode] = useState(presetCode);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [missing, setMissing] = useState(false);
+  const [slow, setSlow] = useState(false);
   const here = mode === 'create' ? '/create' : `/join${presetCode ? '?code=' + presetCode : ''}`;
+
+  useEffect(() => {
+    if (!getSupabase()) setMissing(true);
+    const t = setTimeout(() => setSlow(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (user === null) router.replace(`/auth/login?next=${encodeURIComponent(here)}`);
@@ -37,7 +47,32 @@ export default function EntryForm({ mode, presetCode = '' }: { mode: 'create' | 
     }
   };
 
-  if (!user) return <main className="home" />;
+  if (missing) {
+    return (
+      <main className="home">
+        <div className="box">
+          <div className="warn">
+            إعدادات Supabase غير موجودة. أضف <b dir="ltr">NEXT_PUBLIC_SUPABASE_URL</b> و <b dir="ltr">NEXT_PUBLIC_SUPABASE_ANON_KEY</b> في متغيرات البيئة (Vercel ← Settings ← Environment Variables) ثم أعد النشر.
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!user) {
+    return (
+      <main className="home">
+        <div className="box">
+          <p className="lead">{user === null ? 'جارٍ تحويلك إلى تسجيل الدخول…' : 'جارٍ التحقق من حسابك…'}</p>
+          {slow && (
+            <Link className="primary" href={`/auth/login?next=${encodeURIComponent(here)}`} style={{ display: 'inline-block', padding: '.7rem 1.4rem', borderRadius: 14 }}>
+              تسجيل الدخول
+            </Link>
+          )}
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="home">

@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getSupabase } from '@/lib/supabase';
 import { friendlyError } from '@/lib/wedding';
 
@@ -17,6 +17,10 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
   const [err, setErr] = useState('');
   const [info, setInfo] = useState('');
   const signup = mode === 'signup';
+  const [missing, setMissing] = useState(false);
+  useEffect(() => {
+    if (!getSupabase()) setMissing(true);
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +74,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
             كلمة السر
             <input type="password" dir="ltr" autoComplete={signup ? 'new-password' : 'current-password'} minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />
           </label>
+          {missing && <div className="warn">مفاتيح Supabase غير مضبوطة في البيئة، لن يعمل الدخول قبل إضافتها.</div>}
           {err && <div className="warn">{err}</div>}
           {info && <p className="hint">{info}</p>}
           <button className="primary" style={{ width: '100%' }} disabled={busy} type="submit">

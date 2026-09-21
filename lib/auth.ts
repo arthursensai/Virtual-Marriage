@@ -12,7 +12,11 @@ export function useUser() {
       setUser(null);
       return;
     }
-    void sb.auth.getUser().then(({ data }) => setUser(data.user ?? null));
+    // getSession يقرأ الجلسة المحفوظة محليًا فورًا (بدون شبكة)، فلا تبقى الصفحة فارغة إن تأخّر الاتصال
+    sb.auth
+      .getSession()
+      .then(({ data }) => setUser(data.session?.user ?? null))
+      .catch(() => setUser(null));
     const { data: sub } = sb.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
     return () => sub.subscription.unsubscribe();
   }, []);

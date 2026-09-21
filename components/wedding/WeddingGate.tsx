@@ -31,7 +31,10 @@ function Gate({ code }: { code: string }) {
       return;
     }
     const sb = getSupabase();
-    if (!sb) return;
+    if (!sb) {
+      setErr('مفاتيح Supabase غير مضبوطة في البيئة.');
+      return;
+    }
     let dead = false;
     void (async () => {
       const w = await sb.from('weddings').select('id').eq('code', code).maybeSingle();
@@ -69,6 +72,14 @@ function Gate({ code }: { code: string }) {
       </div>
     );
   }
-  if (!me) return <div className="app" />;
+  if (!me) {
+    return (
+      <div className="center-msg">
+        <div>
+          <h2>💍 جارٍ الدخول إلى القاعة…</h2>
+        </div>
+      </div>
+    );
+  }
   return <WeddingRoom code={code} me={me} />;
 }
