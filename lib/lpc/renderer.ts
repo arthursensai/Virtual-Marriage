@@ -26,7 +26,7 @@ export function drawLPCCharacter(o: DrawCharacterOpts) {
   ctx.save();
   ctx.imageSmoothingEnabled = false;
   for (const layer of appearance.layers) {
-    const img = getLayerImage(layer, requestRender);
+    const img = getLayerImage(layer, anim, requestRender);
     if (!img) continue;
     const def = layer.meta.anims[anim] ?? layer.meta.anims.idle;
     const frame = def.frames > 1 ? Math.floor(t * def.fps) % def.frames : 0;

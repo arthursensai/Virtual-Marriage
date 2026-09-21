@@ -1,5 +1,5 @@
 'use client';
-import type { LPCLayerSource, LPCSheetMeta } from './types';
+import type { AnimState, LPCLayerSource, LPCSheetMeta } from './types';
 import { LPC_DIRECTION_ORDER } from './types';
 
 type Drawable = HTMLImageElement | HTMLCanvasElement;
@@ -15,12 +15,14 @@ function colorFromUrl(url: string): string {
 }
 
 /**
- * يبني صفيحة وهمية (placeholder) بنفس شبكة LPC (صف لكل اتجاه × إطارات المشي)، لتشغيل
- * خط الأنابيب كاملاً (تحميل، تلوين، رسم، حركة) قبل توفّر ملفات LPC الحقيقية. تُستبدل
- * تلقائيًا بمجرد نجاح تحميل الصورة الحقيقية من نفس المسار في manifest.ts.
+ * يبني صفيحة وهمية (placeholder) بنفس شبكة LPC لحركة واحدة (صف لكل اتجاه × إطارات تلك
+ * الحركة تحديدًا)، لتشغيل خط الأنابيب كاملاً (تحميل، تلوين، رسم، حركة) قبل توفّر ملفات
+ * LPC الحقيقية لتلك الحركة. تُستبدل تلقائيًا بمجرد نجاح تحميل الصورة الحقيقية من نفس
+ * المسار في manifest.ts. بما أن idle.png وwalk.png ملفّان حقيقيّان منفصلان تمامًا، يُبنى
+ * البديل الوهمي بعدد أعمدة تلك الحركة فقط (وليس بأكبر عدد إطارات بين كل الحركات).
  */
-function buildMockSheet(meta: LPCSheetMeta, seedColor: string): HTMLCanvasElement {
-  const cols = Math.max(meta.anims.walk.frames, meta.anims.idle.frames, 1);
+function buildMockSheet(meta: LPCSheetMeta, anim: AnimState, seedColor: string): HTMLCanvasElement {
+  const cols = Math.max(meta.anims[anim].frames, 1);
   const rows = LPC_DIRECTION_ORDER.length;
   const cv = document.createElement('canvas');
   cv.width = meta.frameW * cols;
@@ -49,10 +51,10 @@ function buildMockSheet(meta: LPCSheetMeta, seedColor: string): HTMLCanvasElemen
   return cv;
 }
 
-/** يدمج لون تلوين على طبقة (شعر/زيّ ملوَّن)، مُخزَّن مؤقتًا حسب (المصدر + اللون) */
-function applyTint(src: Drawable, layer: LPCLayerSource): Drawable {
+/** يدمج لون تلوين على طبقة (شعر/زيّ ملوَّن)، مُخزَّن مؤقتًا حسب (المصدر + الحركة + اللون) */
+function applyTint(src: Drawable, layer: LPCLayerSource, anim: AnimState, cacheKey: string): Drawable {
   if (!layer.tint) return src;
-  const key = `${layer.url}::${layer.tint}`;
+  const key = `${cacheKey}::${layer.tint}`;
   const hit = tinted.get(key);
   if (hit) return hit;
   const cv = document.createElement('canvas');
@@ -71,14 +73,16 @@ function applyTint(src: Drawable, layer: LPCLayerSource): Drawable {
 }
 
 /**
- * يعيد صورة الطبقة الجاهزة للرسم (حقيقية إن نجح تحميلها، وإلا صفيحة وهمية)، أو null
- * أثناء أول محاولة تحميل. آمن للاستدعاء من حلقة الرسم كل إطار: لا يبدأ تحميلًا جديدًا
- * إن كان هناك تحميل معلّق لنفس المسار بالفعل.
+ * يعيد صورة الطبقة الجاهزة للرسم لحركة محددة (حقيقية إن نجح تحميلها، وإلا صفيحة وهمية)،
+ * أو null أثناء أول محاولة تحميل. آمن للاستدعاء من حلقة الرسم كل إطار: لا يبدأ تحميلًا
+ * جديدًا إن كان هناك تحميل معلّق لنفس المسار بالفعل. مهم: idle.png وwalk.png ملفّان
+ * منفصلان في LPC الحقيقي، لذا يُحمَّل ويُخزَّن كل منهما تحت مفتاح مستقل بالمسار الفعلي
+ * لتلك الحركة (layer.urls[anim])، لا بمفتاح واحد للطبقة كلها.
  */
-export function getLayerImage(layer: LPCLayerSource, onReady?: () => void): Drawable | null {
-  const cacheKey = layer.url;
+export function getLayerImage(layer: LPCLayerSource, anim: AnimState, onReady?: () => void): Drawable | null {
+  const cacheKey = layer.urls[anim];
   const existing = cache.get(cacheKey);
-  if (existing) return applyTint(existing, layer);
+  if (existing) return applyTint(existing, layer, anim, cacheKey);
   if (!pending.has(cacheKey)) {
     pending.add(cacheKey);
     const img = new Image();
@@ -88,16 +92,18 @@ export function getLayerImage(layer: LPCLayerSource, onReady?: () => void): Draw
       onReady?.();
     };
     img.onerror = () => {
-      cache.set(cacheKey, buildMockSheet(layer.meta, colorFromUrl(layer.url)));
+      cache.set(cacheKey, buildMockSheet(layer.meta, anim, colorFromUrl(cacheKey)));
       pending.delete(cacheKey);
       onReady?.();
     };
-    img.src = layer.url;
+    img.src = cacheKey;
   }
   return null;
 }
 
-/** يبدأ تحميل مجموعة طبقات مسبقًا (يُستدعى عند تغيير مظهر لاعب) */
+/** يبدأ تحميل مجموعة طبقات مسبقًا لكل حركاتها (idle وwalk معًا) — يُستدعى عند تغيير مظهر لاعب */
 export function preload(layers: LPCLayerSource[], onReady?: () => void) {
-  layers.forEach((l) => getLayerImage(l, onReady));
+  layers.forEach((l) => {
+    (Object.keys(l.urls) as AnimState[]).forEach((anim) => getLayerImage(l, anim, onReady));
+  });
 }
