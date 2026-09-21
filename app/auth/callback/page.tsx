@@ -18,21 +18,17 @@ function AuthCallbackContent() {
       return;
     }
 
-    const supabase = getSupabase();
-
-    if (!supabase) {
-      setError('Supabase is not configured.');
-      return;
-    }
-
     let cancelled = false;
 
     async function exchangeCode() {
+      const client = getSupabase();
+
       if (!client) {
-	          setError('Supabase is not configured.');
-		      return;
-		        }
-	    const { error } = await supabase.auth.exchangeCodeForSession(code);
+        setError('Supabase is not configured.');
+        return;
+      }
+
+      const { error } = await client.auth.exchangeCodeForSession(code);
 
       if (cancelled) return;
 
@@ -45,7 +41,7 @@ function AuthCallbackContent() {
       router.refresh();
     }
 
-    exchangeCode();
+    void exchangeCode();
 
     return () => {
       cancelled = true;
