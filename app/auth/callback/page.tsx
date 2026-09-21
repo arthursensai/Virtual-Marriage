@@ -20,7 +20,7 @@ function AuthCallbackContent() {
 
     let cancelled = false;
 
-    async function exchangeCode() {
+    async function exchangeCode(authCode: string) {
       const client = getSupabase();
 
       if (!client) {
@@ -28,7 +28,7 @@ function AuthCallbackContent() {
         return;
       }
 
-      const { error } = await client.auth.exchangeCodeForSession(code);
+      const { error } = await client.auth.exchangeCodeForSession(authCode);
 
       if (cancelled) return;
 
@@ -41,7 +41,7 @@ function AuthCallbackContent() {
       router.refresh();
     }
 
-    void exchangeCode();
+    void exchangeCode(code);
 
     return () => {
       cancelled = true;
@@ -79,3 +79,4 @@ export default function AuthCallbackPage() {
     </Suspense>
   );
 }
+
