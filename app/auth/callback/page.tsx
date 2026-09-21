@@ -12,6 +12,8 @@ function AuthCallbackContent() {
 
   useEffect(() => {
     const code = searchParams.get('code');
+    const rawNext = searchParams.get('next');
+    const next = rawNext && rawNext.startsWith('/') ? rawNext : '/';
 
     if (!code) {
       setError('Missing authentication code.');
@@ -37,7 +39,7 @@ function AuthCallbackContent() {
         return;
       }
 
-      router.replace('/');
+      router.replace(next);
       router.refresh();
     }
 
@@ -79,4 +81,3 @@ export default function AuthCallbackPage() {
     </Suspense>
   );
 }
-
