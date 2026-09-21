@@ -1,7 +1,8 @@
 'use client';
 import type { Look } from './types';
 import { clamp, hash } from './util';
-import { ANCHOR_X, ANCHOR_Y, AH, AW, directionOf, getAvatarFrame } from './pixel/avatar';
+import { directionOf } from './pixel/avatar';
+import { getAvatarSprite } from './avatar/sprite';
 import { BOUNDS, HU, OBSTACLES_2D, U, WU, X0, Z0, drawStationLabels, renderVenue, type DrawItem, type View } from './pixel/venue';
 // أنواع فقط من ملف three.js (تُحذف عند البناء، فلا يُحمَّل three في نسخة 2D)
 import type { ReactKind, SceneActor, SceneCeremony, SceneGuest, SceneOptions } from './scene';
@@ -90,6 +91,8 @@ export class WeddingScene {
   private camInit = false;
 
   private reactions = new Map<string, Reaction>();
+  /** ارتفاع لوحة الاسم فوق القدمين (بكسلات CSS) لكل لاعب، يحدَّث أثناء الرسم */
+  private tops = new Map<string, number>();
   private confetti: { x: number; y: number; vx: number; vy: number; c: string; life: number }[] = [];
 
   private raf = 0;
@@ -445,12 +448,16 @@ export class WeddingScene {
         z: e.z,
         draw: (g, sx, sy, kk) => {
           const dir = directionOf(e.rot);
-          const idx = e.moving ? Math.floor(tSec * 8) : Math.floor(tSec * 1.6);
-          const fr = getAvatarFrame(o.rec.look, dir, e.moving, idx);
-          g.fillStyle = 'rgba(0,0,0,0.26)';
-          g.beginPath();
-          g.ellipse(sx, sy - kk, 7 * kk, 2.6 * kk, 0, 0, Math.PI * 2);
-          g.fill();
+          const sp = getAvatarSprite(o.rec.look, dir, e.moving, tSec);
+          // مقياس الشخصية: عدد صحيح من بكسلات الجهاز عند العرض الحاد
+          const f = sp.scale;
+          const kUse = view.crisp ? Math.max(1, Math.round(kk * dpr * f)) / dpr : kk * f;
+          if (!sp.lpc) {
+            g.fillStyle = 'rgba(0,0,0,0.26)';
+            g.beginPath();
+            g.ellipse(sx, sy - kk, 7 * kk, 2.6 * kk, 0, 0, Math.PI * 2);
+            g.fill();
+          }
           if (o.id === this.localId) {
             g.strokeStyle = '#ffd166';
             g.lineWidth = Math.max(1, kk * 0.9);
@@ -458,7 +465,8 @@ export class WeddingScene {
             g.ellipse(sx, sy - kk, 10 * kk, 4 * kk, 0, 0, Math.PI * 2);
             g.stroke();
           }
-          g.drawImage(fr, snap(sx - ANCHOR_X * kk), snap(sy - ANCHOR_Y * kk), AW * kk, AH * kk);
+          g.drawImage(sp.cv, snap(sx - sp.ax * kUse), snap(sy - sp.ay * kUse), sp.cv.width * kUse, sp.cv.height * kUse);
+          this.tops.set(o.id, sp.top * kUse);
         },
       };
     });
@@ -473,7 +481,7 @@ export class WeddingScene {
       .forEach((o) => {
         const e = this.ents.get(o.id)!;
         const p = P(e.x, e.z);
-        const top = p.y - (ANCHOR_Y - 3) * kArt;
+        const top = p.y - (this.tops.get(o.id) ?? 32 * kArt);
         nameplate(ctx, p.x, top - 2, o.rec.name, fontPx, o.gold);
         const r = this.reactions.get(o.id);
         if (r) {

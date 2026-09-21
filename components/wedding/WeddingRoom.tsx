@@ -9,7 +9,7 @@ import WeddingControls from './WeddingControls';
 import WeddingHUD, { type HudPlayer } from './WeddingHUD';
 import type { StageHandle } from './WeddingScene';
 import { toRole, type Me } from './types';
-import { DEFAULT_LOOKS, cloneLook } from '@/lib/characters';
+import { DEFAULT_LOOKS, cloneLook } from '@/lib/looks';
 import { derive } from '@/lib/derive';
 import { WALK_MS, type ReactKind } from '@/lib/scene2d';
 import { chime, ding, setSound, unlockAudio } from '@/lib/sound';
@@ -380,6 +380,7 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
                   onChange={setLook}
                   defaults={role === 'groom' ? DEFAULT_LOOKS.groom : role === 'bride' ? DEFAULT_LOOKS.bride : undefined}
                   allowGender={role === 'guest'}
+                  role={role}
                 />
               </>
             )}
@@ -392,7 +393,7 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
                     اسم العروس
                     <input value={proxy.name} maxLength={24} placeholder="اكتب اسمها هنا" onChange={(e) => setProxy((p) => ({ ...p, name: e.target.value }))} />
                   </label>
-                  <AvatarCustomizer look={proxy.look} onChange={(l) => setProxy((p) => ({ ...p, look: l }))} defaults={DEFAULT_LOOKS.bride} />
+                  <AvatarCustomizer look={proxy.look} onChange={(l) => setProxy((p) => ({ ...p, look: l }))} defaults={DEFAULT_LOOKS.bride} role="bride" />
                   <p className="hint">تستطيع إرسال رابط العروس لتخصّص مظهرها وتوقّع من هاتفها بنفسها.</p>
                 </>
               )

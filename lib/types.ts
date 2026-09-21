@@ -1,3 +1,5 @@
+import type { LpcLook } from './avatar/types';
+
 export type Role = 'groom' | 'bride' | 'guest';
 
 export interface Look {
@@ -8,6 +10,8 @@ export interface Look {
   outfit: string;
   color: string;
   acc: Record<string, boolean>;
+  /** مظهر LPC التفصيلي (اختياري). إن غاب أو لم تتوفر الأصول تُرسم الشخصية البكسلية البسيطة */
+  lpc?: LpcLook;
 }
 
 /** a = الإيجاب/القبول ، s = التوقيع ، round = رقم جولة الحفل */

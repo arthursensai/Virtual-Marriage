@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import WeddingRoom from './WeddingRoom';
 import { toRole, type Me } from './types';
-import { DEFAULT_LOOKS, cloneLook, guestLook } from '@/lib/characters';
+import { DEFAULT_LOOKS, cloneLook, ensureLpc, guestLook } from '@/lib/looks';
 import { useUser } from '@/lib/auth';
 import { getSupabase } from '@/lib/supabase';
 import type { Look } from '@/lib/types';
@@ -54,7 +54,7 @@ function Gate({ code }: { code: string }) {
         weddingId: w.data.id,
         role,
         name: p.data.display_name ?? '',
-        look: saved && saved.skin ? (saved as Look) : cloneLook(base),
+        look: ensureLpc(saved && saved.skin ? (saved as Look) : cloneLook(base), role),
       });
     })();
     return () => {

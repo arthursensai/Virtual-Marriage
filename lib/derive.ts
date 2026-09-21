@@ -1,5 +1,5 @@
 import type { Ceremony, GuestInfo, Look, Presence, PersonView } from './types';
-import { DEFAULT_LOOKS } from './characters';
+import { DEFAULT_LOOKS } from './looks';
 
 export interface RoomView {
   ceremony: Ceremony | null;

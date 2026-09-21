@@ -1,0 +1,2964 @@
+{
+ "version": 1,
+ "base": "/game/assets/characters/lpc",
+ "frame": 64,
+ "categories": [
+  {
+   "id": "hair",
+   "label": "الشعر",
+   "slot": "hair"
+  },
+  {
+   "id": "outfit",
+   "label": "اللباس",
+   "slot": "top"
+  },
+  {
+   "id": "shoes",
+   "label": "الأحذية",
+   "slot": "shoes"
+  },
+  {
+   "id": "hat",
+   "label": "غطاء الرأس",
+   "slot": "hat"
+  },
+  {
+   "id": "neck",
+   "label": "الرقبة",
+   "slot": "neck"
+  },
+  {
+   "id": "glasses",
+   "label": "النظارات",
+   "slot": "metal"
+  },
+  {
+   "id": "earrings",
+   "label": "الأقراط",
+   "slot": "metal"
+  },
+  {
+   "id": "necklace",
+   "label": "العقد",
+   "slot": "metal"
+  },
+  {
+   "id": "beard",
+   "label": "اللحية",
+   "slot": "hair"
+  },
+  {
+   "id": "mustache",
+   "label": "الشارب",
+   "slot": "hair"
+  },
+  {
+   "id": "brows",
+   "label": "الحواجب",
+   "slot": "hair"
+  }
+ ],
+ "baseLayers": [
+  {
+   "z": 0,
+   "recolor": null,
+   "files": {
+    "male": {
+     "walk": "shadow/adult/walk.png",
+     "idle": "shadow/adult/idle.png"
+    },
+    "female": {
+     "walk": "shadow/adult/walk.png",
+     "idle": "shadow/adult/idle.png"
+    }
+   }
+  },
+  {
+   "z": 10,
+   "recolor": "skin",
+   "files": {
+    "male": {
+     "walk": "body/bodies/male/walk.png",
+     "idle": "body/bodies/male/idle.png"
+    },
+    "female": {
+     "walk": "body/bodies/female/walk.png",
+     "idle": "body/bodies/female/idle.png"
+    }
+   }
+  },
+  {
+   "z": 11,
+   "recolor": "skin",
+   "files": {
+    "male": {
+     "walk": "head/heads/human/male/walk.png",
+     "idle": "head/heads/human/male/idle.png"
+    },
+    "female": {
+     "walk": "head/heads/human/female/walk.png",
+     "idle": "head/heads/human/female/idle.png"
+    }
+   }
+  },
+  {
+   "z": 12,
+   "recolor": null,
+   "files": {
+    "male": {
+     "walk": "head/faces/male/neutral/walk.png",
+     "idle": "head/faces/male/neutral/idle.png"
+    },
+    "female": {
+     "walk": "head/faces/female/neutral/walk.png",
+     "idle": "head/faces/female/neutral/idle.png"
+    }
+   }
+  }
+ ],
+ "eyes": {
+  "z": 13,
+  "files": {
+   "male": {
+    "blue": {
+     "walk": "eyes/human/adult/neutral/default/walk/blue.png",
+     "idle": "eyes/human/adult/neutral/default/idle/blue.png"
+    },
+    "brown": {
+     "walk": "eyes/human/adult/neutral/default/walk/brown.png",
+     "idle": "eyes/human/adult/neutral/default/idle/brown.png"
+    },
+    "gray": {
+     "walk": "eyes/human/adult/neutral/default/walk/gray.png",
+     "idle": "eyes/human/adult/neutral/default/idle/gray.png"
+    },
+    "green": {
+     "walk": "eyes/human/adult/neutral/default/walk/green.png",
+     "idle": "eyes/human/adult/neutral/default/idle/green.png"
+    },
+    "orange": {
+     "walk": "eyes/human/adult/neutral/default/walk/orange.png",
+     "idle": "eyes/human/adult/neutral/default/idle/orange.png"
+    }
+   },
+   "female": {
+    "blue": {
+     "walk": "eyes/human/adult/neutral/default/walk/blue.png",
+     "idle": "eyes/human/adult/neutral/default/idle/blue.png"
+    },
+    "brown": {
+     "walk": "eyes/human/adult/neutral/default/walk/brown.png",
+     "idle": "eyes/human/adult/neutral/default/idle/brown.png"
+    },
+    "gray": {
+     "walk": "eyes/human/adult/neutral/default/walk/gray.png",
+     "idle": "eyes/human/adult/neutral/default/idle/gray.png"
+    },
+    "green": {
+     "walk": "eyes/human/adult/neutral/default/walk/green.png",
+     "idle": "eyes/human/adult/neutral/default/idle/green.png"
+    },
+    "orange": {
+     "walk": "eyes/human/adult/neutral/default/walk/orange.png",
+     "idle": "eyes/human/adult/neutral/default/idle/orange.png"
+    }
+   }
+  }
+ },
+ "items": [
+  {
+   "id": "hair.buzzcut",
+   "cat": "hair",
+   "label": "حليق قصير",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/buzzcut/adult/walk.png",
+       "idle": "hair/buzzcut/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/buzzcut/adult/walk.png",
+       "idle": "hair/buzzcut/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.plain",
+   "cat": "hair",
+   "label": "قصير عادي",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/plain/adult/walk.png",
+       "idle": "hair/plain/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/plain/adult/walk.png",
+       "idle": "hair/plain/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.parted",
+   "cat": "hair",
+   "label": "مفروق",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/parted/adult/walk.png",
+       "idle": "hair/parted/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/parted/adult/walk.png",
+       "idle": "hair/parted/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.parted2",
+   "cat": "hair",
+   "label": "مفروق ٢",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/parted2/adult/walk.png",
+       "idle": "hair/parted2/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/parted2/adult/walk.png",
+       "idle": "hair/parted2/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.messy1",
+   "cat": "hair",
+   "label": "مبعثر",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/messy1/adult/walk.png",
+       "idle": "hair/messy1/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/messy1/adult/walk.png",
+       "idle": "hair/messy1/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.curly_short",
+   "cat": "hair",
+   "label": "مجعّد قصير",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/curly_short/adult/walk.png",
+       "idle": "hair/curly_short/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/curly_short/adult/walk.png",
+       "idle": "hair/curly_short/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.afro",
+   "cat": "hair",
+   "label": "أفرو",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/afro/adult/walk.png",
+       "idle": "hair/afro/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/afro/adult/walk.png",
+       "idle": "hair/afro/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.spiked",
+   "cat": "hair",
+   "label": "شوكي",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/spiked/adult/walk.png",
+       "idle": "hair/spiked/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/spiked/adult/walk.png",
+       "idle": "hair/spiked/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.high_and_tight",
+   "cat": "hair",
+   "label": "عسكري",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/high_and_tight/adult/walk.png",
+       "idle": "hair/high_and_tight/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/high_and_tight/adult/walk.png",
+       "idle": "hair/high_and_tight/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.flat_top_fade",
+   "cat": "hair",
+   "label": "مسطّح",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/flat_top_fade/adult/walk.png",
+       "idle": "hair/flat_top_fade/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/flat_top_fade/adult/walk.png",
+       "idle": "hair/flat_top_fade/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.bangs",
+   "cat": "hair",
+   "label": "غرّة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/bangs/adult/walk.png",
+       "idle": "hair/bangs/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/bangs/adult/walk.png",
+       "idle": "hair/bangs/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.swoop",
+   "cat": "hair",
+   "label": "مائل",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/swoop/adult/walk.png",
+       "idle": "hair/swoop/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/swoop/adult/walk.png",
+       "idle": "hair/swoop/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.cornrows",
+   "cat": "hair",
+   "label": "ضفائر ملاصقة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/cornrows/adult/walk.png",
+       "idle": "hair/cornrows/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/cornrows/adult/walk.png",
+       "idle": "hair/cornrows/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.balding",
+   "cat": "hair",
+   "label": "أصلع جزئيًا",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/balding/adult/walk.png",
+       "idle": "hair/balding/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/balding/adult/walk.png",
+       "idle": "hair/balding/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.mop",
+   "cat": "hair",
+   "label": "كثيف",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/mop/adult/walk.png",
+       "idle": "hair/mop/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/mop/adult/walk.png",
+       "idle": "hair/mop/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.long",
+   "cat": "hair",
+   "label": "طويل",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/long/adult/walk.png",
+       "idle": "hair/long/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/long/adult/walk.png",
+       "idle": "hair/long/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.long_straight",
+   "cat": "hair",
+   "label": "طويل ناعم",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/long_straight/adult/walk.png",
+       "idle": "hair/long_straight/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/long_straight/adult/walk.png",
+       "idle": "hair/long_straight/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.bob",
+   "cat": "hair",
+   "label": "بوب",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/bob/adult/walk.png",
+       "idle": "hair/bob/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/bob/adult/walk.png",
+       "idle": "hair/bob/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.bob_side_part",
+   "cat": "hair",
+   "label": "بوب جانبي",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/bob_side_part/adult/walk.png",
+       "idle": "hair/bob_side_part/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/bob_side_part/adult/walk.png",
+       "idle": "hair/bob_side_part/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.pixie",
+   "cat": "hair",
+   "label": "بيكسي",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/pixie/adult/walk.png",
+       "idle": "hair/pixie/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/pixie/adult/walk.png",
+       "idle": "hair/pixie/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.pigtails",
+   "cat": "hair",
+   "label": "ضفيرتان",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/pigtails/adult/walk.png",
+       "idle": "hair/pigtails/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/pigtails/adult/walk.png",
+       "idle": "hair/pigtails/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.bangslong",
+   "cat": "hair",
+   "label": "غرّة طويلة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/bangslong/adult/walk.png",
+       "idle": "hair/bangslong/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/bangslong/adult/walk.png",
+       "idle": "hair/bangslong/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.curly_long",
+   "cat": "hair",
+   "label": "مجعّد طويل",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/curly_long/adult/walk.png",
+       "idle": "hair/curly_long/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/curly_long/adult/walk.png",
+       "idle": "hair/curly_long/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.page",
+   "cat": "hair",
+   "label": "صفحة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/page/adult/walk.png",
+       "idle": "hair/page/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/page/adult/walk.png",
+       "idle": "hair/page/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.lob",
+   "cat": "hair",
+   "label": "لوب",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/lob/adult/walk.png",
+       "idle": "hair/lob/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/lob/adult/walk.png",
+       "idle": "hair/lob/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.loose",
+   "cat": "hair",
+   "label": "منسدل",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/loose/adult/walk.png",
+       "idle": "hair/loose/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/loose/adult/walk.png",
+       "idle": "hair/loose/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.half_up",
+   "cat": "hair",
+   "label": "نصف مرفوع",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/half_up/adult/walk.png",
+       "idle": "hair/half_up/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/half_up/adult/walk.png",
+       "idle": "hair/half_up/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.idol",
+   "cat": "hair",
+   "label": "آيدول",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/idol/adult/walk.png",
+       "idle": "hair/idol/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/idol/adult/walk.png",
+       "idle": "hair/idol/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.bangs_bun",
+   "cat": "hair",
+   "label": "كعكة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/bangs_bun/adult/walk.png",
+       "idle": "hair/bangs_bun/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/bangs_bun/adult/walk.png",
+       "idle": "hair/bangs_bun/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.natural",
+   "cat": "hair",
+   "label": "طبيعي",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/natural/adult/walk.png",
+       "idle": "hair/natural/adult/idle.png"
+      },
+      "female": {
+       "walk": "hair/natural/adult/walk.png",
+       "idle": "hair/natural/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.wavy",
+   "cat": "hair",
+   "label": "مموّج طويل",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 5,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/wavy/adult/bg/walk.png",
+       "idle": "hair/wavy/adult/bg/idle.png"
+      },
+      "female": {
+       "walk": "hair/wavy/adult/bg/walk.png",
+       "idle": "hair/wavy/adult/bg/idle.png"
+      }
+     }
+    },
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/wavy/adult/fg/walk.png",
+       "idle": "hair/wavy/adult/fg/idle.png"
+      },
+      "female": {
+       "walk": "hair/wavy/adult/fg/walk.png",
+       "idle": "hair/wavy/adult/fg/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.long_tied",
+   "cat": "hair",
+   "label": "طويل مربوط",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 5,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/long_tied/adult/bg/walk.png",
+       "idle": "hair/long_tied/adult/bg/idle.png"
+      },
+      "female": {
+       "walk": "hair/long_tied/adult/bg/walk.png",
+       "idle": "hair/long_tied/adult/bg/idle.png"
+      }
+     }
+    },
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/long_tied/adult/fg/walk.png",
+       "idle": "hair/long_tied/adult/fg/idle.png"
+      },
+      "female": {
+       "walk": "hair/long_tied/adult/fg/walk.png",
+       "idle": "hair/long_tied/adult/fg/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.high_ponytail",
+   "cat": "hair",
+   "label": "ذيل حصان عالٍ",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 5,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/high_ponytail/adult/bg/walk.png",
+       "idle": "hair/high_ponytail/adult/bg/idle.png"
+      },
+      "female": {
+       "walk": "hair/high_ponytail/adult/bg/walk.png",
+       "idle": "hair/high_ponytail/adult/bg/idle.png"
+      }
+     }
+    },
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/high_ponytail/adult/fg/walk.png",
+       "idle": "hair/high_ponytail/adult/fg/idle.png"
+      },
+      "female": {
+       "walk": "hair/high_ponytail/adult/fg/walk.png",
+       "idle": "hair/high_ponytail/adult/fg/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.ponytail",
+   "cat": "hair",
+   "label": "ذيل حصان",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 5,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/ponytail/adult/bg/walk.png",
+       "idle": "hair/ponytail/adult/bg/idle.png"
+      },
+      "female": {
+       "walk": "hair/ponytail/adult/bg/walk.png",
+       "idle": "hair/ponytail/adult/bg/idle.png"
+      }
+     }
+    },
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/ponytail/adult/fg/walk.png",
+       "idle": "hair/ponytail/adult/fg/idle.png"
+      },
+      "female": {
+       "walk": "hair/ponytail/adult/fg/walk.png",
+       "idle": "hair/ponytail/adult/fg/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.braid",
+   "cat": "hair",
+   "label": "ضفيرة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 5,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/braid/adult/bg/walk.png",
+       "idle": "hair/braid/adult/bg/idle.png"
+      },
+      "female": {
+       "walk": "hair/braid/adult/bg/walk.png",
+       "idle": "hair/braid/adult/bg/idle.png"
+      }
+     }
+    },
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/braid/adult/fg/walk.png",
+       "idle": "hair/braid/adult/fg/idle.png"
+      },
+      "female": {
+       "walk": "hair/braid/adult/fg/walk.png",
+       "idle": "hair/braid/adult/fg/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.princess",
+   "cat": "hair",
+   "label": "أميرة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 5,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/princess/adult/bg/walk.png",
+       "idle": "hair/princess/adult/bg/idle.png"
+      },
+      "female": {
+       "walk": "hair/princess/adult/bg/walk.png",
+       "idle": "hair/princess/adult/bg/idle.png"
+      }
+     }
+    },
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/princess/adult/fg/walk.png",
+       "idle": "hair/princess/adult/fg/idle.png"
+      },
+      "female": {
+       "walk": "hair/princess/adult/fg/walk.png",
+       "idle": "hair/princess/adult/fg/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.xlong",
+   "cat": "hair",
+   "label": "طويل جدًا",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 5,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/xlong/adult/bg/walk.png",
+       "idle": "hair/xlong/adult/bg/idle.png"
+      },
+      "female": {
+       "walk": "hair/xlong/adult/bg/walk.png",
+       "idle": "hair/xlong/adult/bg/idle.png"
+      }
+     }
+    },
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/xlong/adult/fg/walk.png",
+       "idle": "hair/xlong/adult/fg/idle.png"
+      },
+      "female": {
+       "walk": "hair/xlong/adult/fg/walk.png",
+       "idle": "hair/xlong/adult/fg/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hair.long_center_part",
+   "cat": "hair",
+   "label": "مفروق من المنتصف",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 5,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/long_center_part/adult/bg/walk.png",
+       "idle": "hair/long_center_part/adult/bg/idle.png"
+      },
+      "female": {
+       "walk": "hair/long_center_part/adult/bg/walk.png",
+       "idle": "hair/long_center_part/adult/bg/idle.png"
+      }
+     }
+    },
+    {
+     "z": 80,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "hair/long_center_part/adult/fg/walk.png",
+       "idle": "hair/long_center_part/adult/fg/idle.png"
+      },
+      "female": {
+       "walk": "hair/long_center_part/adult/fg/walk.png",
+       "idle": "hair/long_center_part/adult/fg/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "shoes.shoes_basic",
+   "cat": "shoes",
+   "label": "حذاء عادي",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 20,
+     "recolor": "shoes",
+     "files": {
+      "male": {
+       "walk": "feet/shoes/basic/male/walk.png",
+       "idle": "feet/shoes/basic/male/idle.png"
+      },
+      "female": {
+       "walk": "feet/shoes/basic/thin/walk.png",
+       "idle": "feet/shoes/basic/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "shoes.boots",
+   "cat": "shoes",
+   "label": "بوت",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 20,
+     "recolor": "shoes",
+     "files": {
+      "male": {
+       "walk": "feet/boots/basic/male/walk.png",
+       "idle": "feet/boots/basic/male/idle.png"
+      },
+      "female": {
+       "walk": "feet/boots/basic/thin/walk.png",
+       "idle": "feet/boots/basic/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "shoes.boots_fold",
+   "cat": "shoes",
+   "label": "بوت مطوي",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 20,
+     "recolor": "shoes",
+     "files": {
+      "male": {
+       "walk": "feet/boots/fold/male/walk.png",
+       "idle": "feet/boots/fold/male/idle.png"
+      },
+      "female": {
+       "walk": "feet/boots/fold/thin/walk.png",
+       "idle": "feet/boots/fold/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "shoes.sandals",
+   "cat": "shoes",
+   "label": "صندل",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 20,
+     "recolor": "shoes",
+     "files": {
+      "male": {
+       "walk": "feet/sandals/male/walk.png",
+       "idle": "feet/sandals/male/idle.png"
+      },
+      "female": {
+       "walk": "feet/sandals/thin/walk.png",
+       "idle": "feet/sandals/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "shoes.slippers",
+   "cat": "shoes",
+   "label": "بلغة/شبشب",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 20,
+     "recolor": "shoes",
+     "files": {
+      "male": {
+       "walk": "feet/slippers/male/walk.png",
+       "idle": "feet/slippers/male/idle.png"
+      },
+      "female": {
+       "walk": "feet/slippers/thin/walk.png",
+       "idle": "feet/slippers/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "shoes.shoes_rev",
+   "cat": "shoes",
+   "label": "حذاء كلاسيكي",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 20,
+     "recolor": "shoes",
+     "files": {
+      "male": {
+       "walk": "feet/shoes/revised/male/walk.png",
+       "idle": "feet/shoes/revised/male/idle.png"
+      },
+      "female": {
+       "walk": "feet/shoes/revised/thin/walk.png",
+       "idle": "feet/shoes/revised/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.f_gown_belle",
+   "cat": "outfit",
+   "label": "فستان زفاف أميري",
+   "roles": [
+    "bride"
+   ],
+   "bodies": [
+    "female"
+   ],
+   "slots": [
+    "top"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 40,
+     "recolor": "top",
+     "files": {
+      "female": {
+       "walk": "torso/clothes/corset/female/walk/white.png",
+       "idle": null
+      }
+     }
+    },
+    {
+     "z": 46,
+     "recolor": "top",
+     "files": {
+      "female": {
+       "walk": "legs/skirts/belle/thin/walk.png",
+       "idle": "legs/skirts/belle/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.f_gown_slit",
+   "cat": "outfit",
+   "label": "فستان زفاف انسيابي",
+   "roles": [
+    "bride"
+   ],
+   "bodies": [
+    "female"
+   ],
+   "slots": [
+    "top",
+    "top2"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 45,
+     "recolor": "top",
+     "files": {
+      "female": {
+       "walk": "dress/slit/female/walk/white.png",
+       "idle": "dress/slit/female/idle/white.png"
+      }
+     }
+    },
+    {
+     "z": 47,
+     "recolor": "top2",
+     "files": {
+      "female": {
+       "walk": "dress/sash/female/walk/white.png",
+       "idle": "dress/sash/female/idle/white.png"
+      }
+     }
+    },
+    {
+     "z": 30,
+     "recolor": "bottom",
+     "files": {
+      "female": {
+       "walk": "legs/leggings/thin/walk.png",
+       "idle": "legs/leggings/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.f_kimono",
+   "cat": "outfit",
+   "label": "فستان مطرّز طويل",
+   "roles": null,
+   "bodies": [
+    "female"
+   ],
+   "slots": [
+    "top",
+    "top2"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 45,
+     "recolor": "top",
+     "files": {
+      "female": {
+       "walk": "dress/kimono/normal/universal/female/walk.png",
+       "idle": "dress/kimono/normal/universal/female/idle/white.png"
+      }
+     }
+    },
+    {
+     "z": 46,
+     "recolor": "top2",
+     "files": {
+      "female": {
+       "walk": "dress/kimono/normal/trim/universal/female/walk.png",
+       "idle": "dress/kimono/normal/trim/universal/female/idle/white.png"
+      }
+     }
+    },
+    {
+     "z": 30,
+     "recolor": "bottom",
+     "files": {
+      "female": {
+       "walk": "legs/leggings/thin/walk.png",
+       "idle": "legs/leggings/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.f_kaftan",
+   "cat": "outfit",
+   "label": "قفطان",
+   "roles": null,
+   "bodies": [
+    "female"
+   ],
+   "slots": [
+    "top"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 45,
+     "recolor": "top",
+     "files": {
+      "female": {
+       "walk": "torso/clothes/robe/female/walk/white.png",
+       "idle": null
+      }
+     }
+    },
+    {
+     "z": 30,
+     "recolor": "top",
+     "files": {
+      "female": {
+       "walk": "legs/skirts/straight/thin/walk.png",
+       "idle": "legs/skirts/straight/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.f_blouse_skirt",
+   "cat": "outfit",
+   "label": "بلوزة وتنورة",
+   "roles": null,
+   "bodies": [
+    "female"
+   ],
+   "slots": [
+    "top",
+    "bottom"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 40,
+     "recolor": "top",
+     "files": {
+      "female": {
+       "walk": "torso/clothes/blouse/female/walk/white.png",
+       "idle": null
+      }
+     }
+    },
+    {
+     "z": 30,
+     "recolor": "bottom",
+     "files": {
+      "female": {
+       "walk": "legs/skirts/plain/thin/walk.png",
+       "idle": "legs/skirts/plain/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.f_tunic",
+   "cat": "outfit",
+   "label": "تونيك وبنطلون",
+   "roles": null,
+   "bodies": [
+    "female"
+   ],
+   "slots": [
+    "top",
+    "bottom"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 40,
+     "recolor": "top",
+     "files": {
+      "female": {
+       "walk": "torso/clothes/tunic/female/walk/white.png",
+       "idle": null
+      }
+     }
+    },
+    {
+     "z": 30,
+     "recolor": "bottom",
+     "files": {
+      "female": {
+       "walk": "legs/leggings/thin/walk.png",
+       "idle": "legs/leggings/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.f_longsleeve",
+   "cat": "outfit",
+   "label": "بلوزة كمّ طويل وبنطلون",
+   "roles": null,
+   "bodies": [
+    "female"
+   ],
+   "slots": [
+    "top",
+    "bottom"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 40,
+     "recolor": "top",
+     "files": {
+      "female": {
+       "walk": "torso/clothes/blouse_longsleeve/female/walk/white.png",
+       "idle": null
+      }
+     }
+    },
+    {
+     "z": 30,
+     "recolor": "bottom",
+     "files": {
+      "female": {
+       "walk": "legs/pants/thin/walk.png",
+       "idle": "legs/pants/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.m_suit",
+   "cat": "outfit",
+   "label": "بدلة رسمية",
+   "roles": [
+    "groom",
+    "guest"
+   ],
+   "bodies": [
+    "male"
+   ],
+   "slots": [
+    "top",
+    "top2",
+    "bottom"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 40,
+     "recolor": "top2",
+     "files": {
+      "male": {
+       "walk": "torso/clothes/longsleeve/formal/male/walk.png",
+       "idle": null
+      }
+     }
+    },
+    {
+     "z": 50,
+     "recolor": "top",
+     "files": {
+      "male": {
+       "walk": "torso/jacket/collared/male/walk/white.png",
+       "idle": null
+      }
+     }
+    },
+    {
+     "z": 30,
+     "recolor": "bottom",
+     "files": {
+      "male": {
+       "walk": "legs/formal/male/walk.png",
+       "idle": "legs/formal/male/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.m_tuxedo",
+   "cat": "outfit",
+   "label": "بدلة العريس الفاخرة",
+   "roles": [
+    "groom"
+   ],
+   "bodies": [
+    "male"
+   ],
+   "slots": [
+    "top",
+    "top2",
+    "bottom"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 40,
+     "recolor": "top2",
+     "files": {
+      "male": {
+       "walk": "torso/clothes/longsleeve/formal_striped/male/walk.png",
+       "idle": null
+      }
+     }
+    },
+    {
+     "z": 50,
+     "recolor": "top",
+     "files": {
+      "male": {
+       "walk": "torso/jacket/frock/male/walk/white.png",
+       "idle": null
+      }
+     }
+    },
+    {
+     "z": 30,
+     "recolor": "bottom",
+     "files": {
+      "male": {
+       "walk": "legs/formal_striped/male/walk.png",
+       "idle": "legs/formal_striped/male/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.m_vest",
+   "cat": "outfit",
+   "label": "صدرية وقميص",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [
+    "top",
+    "top2",
+    "bottom"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 40,
+     "recolor": "top2",
+     "files": {
+      "male": {
+       "walk": "torso/clothes/longsleeve/longsleeves/male/walk.png",
+       "idle": "torso/clothes/longsleeve/longsleeves/male/idle.png"
+      }
+     }
+    },
+    {
+     "z": 50,
+     "recolor": "top",
+     "files": {
+      "male": {
+       "walk": "torso/clothes/vest/male/walk/white.png",
+       "idle": "torso/clothes/vest/male/idle/white.png"
+      }
+     }
+    },
+    {
+     "z": 30,
+     "recolor": "bottom",
+     "files": {
+      "male": {
+       "walk": "legs/pants/male/walk.png",
+       "idle": "legs/pants/male/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.m_shirt",
+   "cat": "outfit",
+   "label": "قميص وبنطلون",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [
+    "top",
+    "bottom"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 40,
+     "recolor": "top",
+     "files": {
+      "male": {
+       "walk": "torso/clothes/longsleeve/longsleeve/male/walk.png",
+       "idle": "torso/clothes/longsleeve/longsleeve/male/idle.png"
+      }
+     }
+    },
+    {
+     "z": 30,
+     "recolor": "bottom",
+     "files": {
+      "male": {
+       "walk": "legs/pants/male/walk.png",
+       "idle": "legs/pants/male/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "outfit.m_tshirt",
+   "cat": "outfit",
+   "label": "تيشيرت وبنطلون",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [
+    "top",
+    "bottom"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 40,
+     "recolor": "top",
+     "files": {
+      "male": {
+       "walk": "torso/clothes/shortsleeve/tshirt/male/walk.png",
+       "idle": "torso/clothes/shortsleeve/tshirt/male/idle.png"
+      }
+     }
+    },
+    {
+     "z": 30,
+     "recolor": "bottom",
+     "files": {
+      "male": {
+       "walk": "legs/pants/male/walk.png",
+       "idle": "legs/pants/male/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hat.tiara",
+   "cat": "hat",
+   "label": "تاج العروس",
+   "roles": [
+    "bride"
+   ],
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "metal"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 90,
+     "recolor": "metal",
+     "files": {
+      "male": {
+       "walk": "hat/formal/tiara/adult/walk.png",
+       "idle": "hat/formal/tiara/adult/idle.png"
+      },
+      "female": {
+       "walk": "hat/formal/tiara/adult/walk.png",
+       "idle": "hat/formal/tiara/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hat.crown",
+   "cat": "hat",
+   "label": "تاج ملكي",
+   "roles": [
+    "groom",
+    "bride"
+   ],
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "metal"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 90,
+     "recolor": "metal",
+     "files": {
+      "male": {
+       "walk": "hat/formal/crown/adult/walk.png",
+       "idle": "hat/formal/crown/adult/idle.png"
+      },
+      "female": {
+       "walk": "hat/formal/crown/adult/walk.png",
+       "idle": "hat/formal/crown/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hat.hijab",
+   "cat": "hat",
+   "label": "حجاب",
+   "roles": null,
+   "bodies": [
+    "female"
+   ],
+   "slots": [
+    "hat"
+   ],
+   "hides": [
+    "hair"
+   ],
+   "layers": [
+    {
+     "z": 92,
+     "recolor": "hat",
+     "files": {
+      "female": {
+       "walk": "hat/cloth/hijab/thin/walk.png",
+       "idle": "hat/cloth/hijab/thin/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hat.tophat",
+   "cat": "hat",
+   "label": "قبعة رسمية",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [
+    "hat"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 90,
+     "recolor": "hat",
+     "files": {
+      "male": {
+       "walk": "hat/formal/tophat/adult/walk.png",
+       "idle": "hat/formal/tophat/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hat.bowler",
+   "cat": "hat",
+   "label": "قبعة بولر",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [
+    "hat"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 90,
+     "recolor": "hat",
+     "files": {
+      "male": {
+       "walk": "hat/formal/bowler/adult/walk.png",
+       "idle": "hat/formal/bowler/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "hat.headband",
+   "cat": "hat",
+   "label": "عصابة رأس",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "hat"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 90,
+     "recolor": "hat",
+     "files": {
+      "male": {
+       "walk": "hat/headband/tied/adult/walk.png",
+       "idle": "hat/headband/tied/adult/idle.png"
+      },
+      "female": {
+       "walk": "hat/headband/tied/adult/walk.png",
+       "idle": "hat/headband/tied/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "neck.bowtie",
+   "cat": "neck",
+   "label": "ببيون",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "neck"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 60,
+     "recolor": "neck",
+     "files": {
+      "male": {
+       "walk": "neck/tie/bowtie/adult/walk.png",
+       "idle": "neck/tie/bowtie/adult/idle.png"
+      },
+      "female": {
+       "walk": "neck/tie/bowtie/adult/walk.png",
+       "idle": "neck/tie/bowtie/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "neck.bowtie2",
+   "cat": "neck",
+   "label": "ببيون كبير",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "neck"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 60,
+     "recolor": "neck",
+     "files": {
+      "male": {
+       "walk": "neck/tie/bowtie2/adult/walk.png",
+       "idle": "neck/tie/bowtie2/adult/idle.png"
+      },
+      "female": {
+       "walk": "neck/tie/bowtie2/adult/walk.png",
+       "idle": "neck/tie/bowtie2/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "neck.necktie",
+   "cat": "neck",
+   "label": "رباط عنق",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "neck"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 60,
+     "recolor": "neck",
+     "files": {
+      "male": {
+       "walk": "neck/tie/necktie/male/walk.png",
+       "idle": "neck/tie/necktie/male/idle.png"
+      },
+      "female": {
+       "walk": "neck/tie/necktie/female/walk.png",
+       "idle": "neck/tie/necktie/female/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "neck.scarf",
+   "cat": "neck",
+   "label": "وشاح",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "neck"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 61,
+     "recolor": "neck",
+     "files": {
+      "male": {
+       "walk": "neck/scarf/walk.png",
+       "idle": "neck/scarf/idle.png"
+      },
+      "female": {
+       "walk": "neck/scarf/walk.png",
+       "idle": "neck/scarf/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "glasses.round",
+   "cat": "glasses",
+   "label": "نظارة دائرية",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "metal"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 70,
+     "recolor": "metal",
+     "files": {
+      "male": {
+       "walk": "facial/glasses/round/adult/walk.png",
+       "idle": "facial/glasses/round/adult/idle.png"
+      },
+      "female": {
+       "walk": "facial/glasses/round/adult/walk.png",
+       "idle": "facial/glasses/round/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "glasses.shades",
+   "cat": "glasses",
+   "label": "نظارة شمسية",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "metal"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 70,
+     "recolor": "metal",
+     "files": {
+      "male": {
+       "walk": "facial/glasses/shades/adult/walk.png",
+       "idle": "facial/glasses/shades/adult/idle.png"
+      },
+      "female": {
+       "walk": "facial/glasses/shades/adult/walk.png",
+       "idle": "facial/glasses/shades/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "glasses.secretary",
+   "cat": "glasses",
+   "label": "نظارة أنيقة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "metal"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 70,
+     "recolor": "metal",
+     "files": {
+      "male": {
+       "walk": "facial/glasses/secretary/adult/walk.png",
+       "idle": "facial/glasses/secretary/adult/idle.png"
+      },
+      "female": {
+       "walk": "facial/glasses/secretary/adult/walk.png",
+       "idle": "facial/glasses/secretary/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "glasses.nerd",
+   "cat": "glasses",
+   "label": "نظارة سميكة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "metal"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 70,
+     "recolor": "metal",
+     "files": {
+      "male": {
+       "walk": "facial/glasses/nerd/adult/walk.png",
+       "idle": "facial/glasses/nerd/adult/idle.png"
+      },
+      "female": {
+       "walk": "facial/glasses/nerd/adult/walk.png",
+       "idle": "facial/glasses/nerd/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "earrings.simple",
+   "cat": "earrings",
+   "label": "أقراط بسيطة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "metal"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 71,
+     "recolor": "metal",
+     "files": {
+      "male": {
+       "walk": "facial/earrings/simple/male/walk.png",
+       "idle": null
+      },
+      "female": {
+       "walk": "facial/earrings/simple/female/walk.png",
+       "idle": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "necklace.simple",
+   "cat": "necklace",
+   "label": "عقد بسيط",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "metal"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 62,
+     "recolor": "metal",
+     "files": {
+      "male": {
+       "walk": "neck/necklace/simple/male/walk.png",
+       "idle": "neck/necklace/simple/male/idle/silver.png"
+      },
+      "female": {
+       "walk": "neck/necklace/simple/female/walk.png",
+       "idle": "neck/necklace/simple/female/idle/silver.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "necklace.chain",
+   "cat": "necklace",
+   "label": "سلسلة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [
+    "metal"
+   ],
+   "hides": [],
+   "layers": [
+    {
+     "z": 62,
+     "recolor": "metal",
+     "files": {
+      "male": {
+       "walk": "neck/necklace/chain/male/walk.png",
+       "idle": "neck/necklace/chain/male/idle/silver.png"
+      },
+      "female": {
+       "walk": "neck/necklace/chain/female/walk.png",
+       "idle": "neck/necklace/chain/female/idle/silver.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "beard.basic",
+   "cat": "beard",
+   "label": "لحية عادية",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 65,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "beards/beard/basic/walk.png",
+       "idle": "beards/beard/basic/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "beard.medium",
+   "cat": "beard",
+   "label": "لحية متوسطة",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 65,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "beards/beard/medium/walk.png",
+       "idle": "beards/beard/medium/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "beard.trimmed",
+   "cat": "beard",
+   "label": "لحية مهذّبة",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 65,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "beards/beard/trimmed/walk.png",
+       "idle": "beards/beard/trimmed/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "beard.5oclock_shadow",
+   "cat": "beard",
+   "label": "ذقن خفيفة",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 65,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "beards/beard/5oclock_shadow/walk.png",
+       "idle": "beards/beard/5oclock_shadow/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "mustache.basic",
+   "cat": "mustache",
+   "label": "شارب عادي",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 66,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "beards/mustache/basic/walk.png",
+       "idle": "beards/mustache/basic/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "mustache.handlebar",
+   "cat": "mustache",
+   "label": "شارب مفتول",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 66,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "beards/mustache/handlebar/walk.png",
+       "idle": "beards/mustache/handlebar/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "mustache.chevron",
+   "cat": "mustache",
+   "label": "شارب عريض",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 66,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "beards/mustache/chevron/walk.png",
+       "idle": "beards/mustache/chevron/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "mustache.french",
+   "cat": "mustache",
+   "label": "شارب فرنسي",
+   "roles": null,
+   "bodies": [
+    "male"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 66,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "beards/mustache/french/walk.png",
+       "idle": "beards/mustache/french/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "brows.thin",
+   "cat": "brows",
+   "label": "رفيعة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 14,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "eyes/eyebrows/thin/adult/walk.png",
+       "idle": "eyes/eyebrows/thin/adult/idle.png"
+      },
+      "female": {
+       "walk": "eyes/eyebrows/thin/adult/walk.png",
+       "idle": "eyes/eyebrows/thin/adult/idle.png"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "brows.thick",
+   "cat": "brows",
+   "label": "كثيفة",
+   "roles": null,
+   "bodies": [
+    "male",
+    "female"
+   ],
+   "slots": [],
+   "hides": [],
+   "layers": [
+    {
+     "z": 14,
+     "recolor": "hair",
+     "files": {
+      "male": {
+       "walk": "eyes/eyebrows/thick/adult/walk.png",
+       "idle": "eyes/eyebrows/thick/adult/idle.png"
+      },
+      "female": {
+       "walk": "eyes/eyebrows/thick/adult/walk.png",
+       "idle": "eyes/eyebrows/thick/adult/idle.png"
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "proc": [
+  {
+   "id": "veil",
+   "label": "طرحة الزفاف",
+   "roles": [
+    "bride"
+   ]
+  },
+  {
+   "id": "bouquet",
+   "label": "باقة ورد",
+   "roles": [
+    "bride"
+   ]
+  },
+  {
+   "id": "fez",
+   "label": "طربوش",
+   "roles": [
+    "groom",
+    "guest"
+   ],
+   "bodies": [
+    "male"
+   ],
+   "hides": [
+    "hair"
+   ]
+  }
+ ],
+ "palettes": {
+  "skin": [
+   "#fbe3cf",
+   "#f6d5b8",
+   "#e8b48a",
+   "#d9a06f",
+   "#c68a5b",
+   "#a8683f",
+   "#8d5a3b",
+   "#5a3825"
+  ],
+  "hair": [
+   "#0f0b0a",
+   "#1a1410",
+   "#3b2417",
+   "#4a2f1d",
+   "#6b4423",
+   "#8a5a2b",
+   "#b07a3a",
+   "#c9a24a",
+   "#e6c78a",
+   "#b53a2a",
+   "#d9d9d9",
+   "#e58fb0",
+   "#7a4dff",
+   "#2f5fa8"
+  ],
+  "cloth": [
+   "#ffffff",
+   "#f4e9d3",
+   "#e9cfc0",
+   "#e58fb0",
+   "#c22f4b",
+   "#8f1d31",
+   "#9b1c1c",
+   "#f2a65a",
+   "#ffd166",
+   "#c9a24a",
+   "#0f6b5c",
+   "#2e8b57",
+   "#2f5fa8",
+   "#1b2a49",
+   "#6a2c91",
+   "#c9b6f2",
+   "#8a8f98",
+   "#111111"
+  ],
+  "shoes": [
+   "#111111",
+   "#3b2417",
+   "#6b4423",
+   "#b08a5a",
+   "#ffffff",
+   "#c9a24a",
+   "#c22f4b",
+   "#ffd166",
+   "#1b2a49"
+  ],
+  "metal": [
+   "#d8b55a",
+   "#cfd6df",
+   "#e0a690",
+   "#2b2b30",
+   "#ffffff"
+  ]
+ },
+ "slots": {
+  "top": {
+   "label": "اللون الأساسي",
+   "palette": "cloth"
+  },
+  "top2": {
+   "label": "اللون الثانوي",
+   "palette": "cloth"
+  },
+  "bottom": {
+   "label": "لون السفلي",
+   "palette": "cloth"
+  },
+  "shoes": {
+   "label": "لون الحذاء",
+   "palette": "shoes"
+  },
+  "hat": {
+   "label": "اللون",
+   "palette": "cloth"
+  },
+  "neck": {
+   "label": "اللون",
+   "palette": "cloth"
+  },
+  "metal": {
+   "label": "المعدن",
+   "palette": "metal"
+  },
+  "hair": {
+   "label": "لون الشعر",
+   "palette": "hair"
+  },
+  "skin": {
+   "label": "لون البشرة",
+   "palette": "skin"
+  }
+ },
+ "defaults": {
+  "groom": {
+   "body": "male",
+   "skin": "#e8b48a",
+   "eyes": "brown",
+   "sel": {
+    "hair": "hair.plain",
+    "brows": "brows.thick",
+    "outfit": "outfit.m_suit",
+    "shoes": "shoes.shoes_basic",
+    "neck": "neck.bowtie"
+   },
+   "col": {
+    "hair": "#1a1410",
+    "top": "#1b2a49",
+    "top2": "#ffffff",
+    "bottom": "#1b2a49",
+    "shoes": "#111111",
+    "neck": "#9b1c1c"
+   },
+   "proc": {}
+  },
+  "bride": {
+   "body": "female",
+   "skin": "#e8b48a",
+   "eyes": "brown",
+   "sel": {
+    "hair": "hair.long",
+    "brows": "brows.thin",
+    "outfit": "outfit.f_gown_belle",
+    "hat": "hat.tiara",
+    "earrings": "earrings.simple"
+   },
+   "col": {
+    "hair": "#4a2f1d",
+    "top": "#ffffff",
+    "metal": "#d8b55a"
+   },
+   "proc": {
+    "veil": true,
+    "bouquet": true
+   }
+  },
+  "guest_male": {
+   "body": "male",
+   "skin": "#e8b48a",
+   "eyes": "brown",
+   "sel": {
+    "hair": "hair.parted",
+    "brows": "brows.thin",
+    "outfit": "outfit.m_shirt",
+    "shoes": "shoes.shoes_basic"
+   },
+   "col": {
+    "hair": "#4a2f1d",
+    "top": "#2f5fa8",
+    "bottom": "#1b2a49",
+    "shoes": "#3b2417"
+   },
+   "proc": {}
+  },
+  "guest_female": {
+   "body": "female",
+   "skin": "#e8b48a",
+   "eyes": "brown",
+   "sel": {
+    "hair": "hair.bob",
+    "brows": "brows.thin",
+    "outfit": "outfit.f_kimono",
+    "shoes": "shoes.sandals"
+   },
+   "col": {
+    "hair": "#4a2f1d",
+    "top": "#6a2c91",
+    "top2": "#c9a24a",
+    "bottom": "#111111",
+    "shoes": "#3b2417"
+   },
+   "proc": {}
+  }
+ }
+}

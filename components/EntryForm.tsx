@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getSupabase } from '@/lib/supabase';
 import { useUser } from '@/lib/auth';
-import { guestLook, cloneLook, DEFAULT_LOOKS } from '@/lib/characters';
+import { guestLook, cloneLook, DEFAULT_LOOKS } from '@/lib/looks';
 import { createWedding, joinWedding, friendlyError } from '@/lib/wedding';
 import { clientId } from '@/lib/util';
 

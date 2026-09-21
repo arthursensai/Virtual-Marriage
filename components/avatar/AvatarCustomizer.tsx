@@ -1,6 +1,9 @@
 'use client';
-import { CLOTHC, HAIRC, OPT, SKINS, randomLook } from '@/lib/characters';
-import type { Look } from '@/lib/types';
+import { useEffect, useState } from 'react';
+import { lpcAvailability, onLpcChange } from '@/lib/avatar/lpc';
+import { CLOTHC, HAIRC, OPT, SKINS, randomLook } from '@/lib/looks';
+import type { Look, Role } from '@/lib/types';
+import LpcCustomizer from './LpcCustomizer';
 
 interface Props {
   look: Look;
@@ -8,6 +11,8 @@ interface Props {
   defaults?: Look;
   /** يسمح للضيف باختيار زيّ رجالي أو نسائي */
   allowGender?: boolean;
+  /** دور صاحب المظهر (لتقييد القطع الخاصة بالعروسين) */
+  role?: Role;
 }
 
 function Swatches({ list, cur, onPick }: { list: string[]; cur: string; onPick: (c: string) => void }) {
@@ -31,7 +36,20 @@ function Chips({ list, cur, onPick }: { list: [string, string][]; cur: string; o
   );
 }
 
-export default function AvatarCustomizer({ look, onChange, defaults, allowGender }: Props) {
+export default function AvatarCustomizer({ look, onChange, defaults, allowGender, role = 'guest' }: Props) {
+  // نظام LPC الكامل يعمل عند توفر الأصول؛ وإلا تبقى الخيارات البسيطة القديمة
+  const [avail, setAvail] = useState(lpcAvailability());
+  useEffect(() => {
+    setAvail(lpcAvailability());
+    return onLpcChange(() => setAvail(lpcAvailability()));
+  }, []);
+  if (avail === 'yes' && look.lpc) {
+    return <LpcCustomizer look={look} onChange={onChange} role={role} allowBody={allowGender} defaults={defaults} />;
+  }
+  return <SimpleCustomizer look={look} onChange={onChange} defaults={defaults} allowGender={allowGender} />;
+}
+
+function SimpleCustomizer({ look, onChange, defaults, allowGender }: Omit<Props, 'role'>) {
   const o = look.female ? OPT.female : OPT.male;
   const set = (patch: Partial<Look>) => onChange({ ...look, ...patch });
   const toggleAcc = (k: string) => set({ acc: { ...look.acc, [k]: !look.acc[k] } });
