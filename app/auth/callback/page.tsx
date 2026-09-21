@@ -28,7 +28,11 @@ function AuthCallbackContent() {
     let cancelled = false;
 
     async function exchangeCode() {
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!client) {
+	          setError('Supabase is not configured.');
+		      return;
+		        }
+	    const { error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (cancelled) return;
 
