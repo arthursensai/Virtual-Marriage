@@ -1,16 +1,13 @@
 'use client';
 import type { Look } from './types';
 import { clamp, hash } from './util';
-import { BOUNDS, OBSTACLES_2D, drawVenue, project, type Cam2D } from './world2d';
-import { resolveAppearance } from './lpc/manifest';
-import { drawLPCCharacter, drawNameplate, quantizeDirection } from './lpc/renderer';
-import { preload } from './lpc/assetLoader';
-import type { LPCAppearance } from './lpc/types';
-// نعيد استخدام الأنواع والثوابت غير المرتبطة بالمُحرِّك من النسخة ثلاثية الأبعاد، لتفادي أي
-// انحراف بينهما. lib/scene.ts (three.js) يبقى كما هو، ولم يُمس أو يُستبدل.
+import { ANCHOR_X, ANCHOR_Y, AH, AW, directionOf, getAvatarFrame } from './pixel/avatar';
+import { BOUNDS, HU, OBSTACLES_2D, U, WU, X0, Z0, drawStationLabels, renderVenue, type DrawItem, type View } from './pixel/venue';
+// أنواع فقط من ملف three.js (تُحذف عند البناء، فلا يُحمَّل three في نسخة 2D)
 import type { ReactKind, SceneActor, SceneCeremony, SceneGuest, SceneOptions } from './scene';
 
-export { WALK_MS, MAX_GUESTS } from './scene';
+export const WALK_MS = 7000;
+export const MAX_GUESTS = 20;
 export type { ReactKind, SceneActor, SceneGuest, SceneCeremony, SceneOptions } from './scene';
 
 const SPEED = 3.4;
@@ -31,17 +28,37 @@ interface Ent {
 interface ActorRec {
   name: string;
   look: Look;
-  appearance: LPCAppearance;
 }
 interface Reaction {
   clapUntil: number;
   hearts: { x: number; y: number; life: number }[];
 }
+interface Cam {
+  cx: number;
+  cz: number;
+  S: number;
+}
 
-function goalFor2D(step: number): Cam2D {
-  if (step < 0) return { cx: 0, cz: 5.4, zoom: 30 };
-  if (step === 0) return { cx: 0, cz: 3, zoom: 32 };
-  return { cx: 0, cz: -0.5, zoom: 46 };
+/** لوحة اسم فوق الشخصية: داكنة شبه شفافة، وحواف ذهبية للعروسين */
+function nameplate(g: CanvasRenderingContext2D, x: number, y: number, text: string, fontPx: number, gold: boolean) {
+  const t = text.length > 18 ? text.slice(0, 17) + '…' : text;
+  g.save();
+  g.font = `700 ${fontPx}px Tajawal, Tahoma, sans-serif`;
+  const w = g.measureText(t).width + fontPx * 1.3;
+  const h = fontPx * 1.75;
+  g.fillStyle = 'rgba(10,14,30,.78)';
+  g.beginPath();
+  if (typeof g.roundRect === 'function') g.roundRect(x - w / 2, y - h, w, h, h / 2);
+  else g.rect(x - w / 2, y - h, w, h);
+  g.fill();
+  g.strokeStyle = gold ? '#d8b55a' : 'rgba(255,255,255,.18)';
+  g.lineWidth = gold ? 1.5 : 1;
+  g.stroke();
+  g.fillStyle = gold ? '#ffe9a8' : '#fff';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillText(t, x, y - h / 2 + 1);
+  g.restore();
 }
 
 export class WeddingScene {
@@ -67,9 +84,10 @@ export class WeddingScene {
   private night = true;
   private viewShift = 0;
 
-  private cam: Cam2D = { cx: 0, cz: 5.4, zoom: 30 };
-  private camGoal: Cam2D = { cx: 0, cz: 5.4, zoom: 30 };
-  private userZoom = false;
+  private cam: Cam = { cx: 0, cz: 4, S: 40 };
+  private overview = false;
+  private zoomMul: number | null = null;
+  private camInit = false;
 
   private reactions = new Map<string, Reaction>();
   private confetti: { x: number; y: number; vx: number; vy: number; c: string; life: number }[] = [];
@@ -94,14 +112,16 @@ export class WeddingScene {
   setNight(n: boolean) {
     this.night = n;
   }
+  setOverview(b: boolean) {
+    this.overview = b;
+    this.zoomMul = null;
+  }
 
   setActor(role: 'groom' | 'bride', a: SceneActor) {
     const key = JSON.stringify([a.look, a.name]);
     if (this.actorKey[role] === key) return;
     this.actorKey[role] = key;
-    const appearance = resolveAppearance(role, a.look);
-    preload(appearance.layers);
-    this.actors[role] = { name: a.name, look: a.look, appearance };
+    this.actors[role] = { name: a.name, look: a.look };
     if (!this.ents.has(role)) {
       const sp = a.pos ?? { x: role === 'groom' ? -0.85 : 0.85, z: -0.5, r: role === 'groom' ? Math.PI / 2 : Math.PI * 1.5 };
       this.ents.set(role, { x: sp.x, z: sp.z, tx: sp.x, tz: sp.z, rot: sp.r, trot: sp.r, moving: false, seen: 0 });
@@ -109,16 +129,14 @@ export class WeddingScene {
   }
 
   setGuests(list: SceneGuest[]) {
-    const shown = list.slice(0, 20);
+    const shown = list.slice(0, MAX_GUESTS);
     const ids = new Set(shown.map((g) => g.id));
     for (const id of Array.from(this.guests.keys())) if (!ids.has(id)) this.guests.delete(id);
     shown.forEach((g) => {
       const key = JSON.stringify([g.look, g.name]);
       const cur = this.guests.get(g.id);
       if (cur && cur.key === key) return;
-      const appearance = resolveAppearance('guest', g.look);
-      preload(appearance.layers);
-      this.guests.set(g.id, { key, rec: { name: g.name, look: g.look, appearance } });
+      this.guests.set(g.id, { key, rec: { name: g.name, look: g.look } });
     });
     shown.forEach((g) => {
       if (this.ents.has(g.id)) return;
@@ -189,7 +207,7 @@ export class WeddingScene {
     if (!par) return;
     this.w = Math.max(1, par.clientWidth);
     this.h = Math.max(1, par.clientHeight);
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.dpr = Math.min(window.devicePixelRatio || 1, 3);
     this.canvas.width = Math.round(this.w * this.dpr);
     this.canvas.height = Math.round(this.h * this.dpr);
     this.canvas.style.width = `${this.w}px`;
@@ -201,7 +219,49 @@ export class WeddingScene {
     this.cleanup.forEach((f) => f());
   }
 
-  /* ---------- التصادم ---------- */
+  /* ---------- الكاميرا ---------- */
+  /** مقياس "بكسل-آرت صحيح": كل بكسل رسم = عدد صحيح من بكسلات الجهاز، فتبقى الصورة حادّة */
+  private baseS() {
+    const mCss = this.w >= 1000 ? 3 : 2;
+    const pxm = Math.max(1, Math.round(mCss * this.dpr));
+    return (U * pxm) / this.dpr;
+  }
+  private fitS() {
+    return Math.min(this.w / 21.6, this.h / 22.2);
+  }
+  private crisp() {
+    return !this.overview && this.zoomMul === null;
+  }
+  private targetS() {
+    if (this.overview) return this.fitS();
+    return this.baseS() * (this.zoomMul ?? 1);
+  }
+
+  private camGoal(step: number, S: number): { cx: number; cz: number } {
+    let cx = 0;
+    let cz = 4.5;
+    if (this.overview) return { cx: 0, cz: 4.5 };
+    if (step === 0) {
+      const g = this.ents.get('groom');
+      cz = g ? g.z : 4;
+    } else if (step >= 1) {
+      cz = -0.3;
+    } else {
+      const me = this.localId ? this.ents.get(this.localId) : null;
+      if (me) {
+        cx = me.x;
+        cz = me.z;
+      }
+    }
+    // لا نخرج بالكاميرا خارج حدود الخريطة
+    const vw = this.w / S;
+    const vh = this.h / S;
+    cx = vw >= WU ? X0 + WU / 2 : clamp(cx, X0 + vw / 2, X0 + WU - vw / 2);
+    cz = vh >= HU ? Z0 + HU / 2 : clamp(cz, Z0 + vh / 2, Z0 + HU - vh / 2);
+    return { cx, cz };
+  }
+
+  /* ---------- التصادم والحركة ---------- */
   private collide(x: number, z: number) {
     let nx = clamp(x, BOUNDS.minX, BOUNDS.maxX);
     let nz = clamp(z, BOUNDS.minZ, BOUNDS.maxZ);
@@ -268,13 +328,12 @@ export class WeddingScene {
 
   /* ---------- مراحل الحفل ---------- */
   private enterStep(step: number, el: number) {
-    if (!this.userZoom) this.camGoal = goalFor2D(step);
     const late = step === 5 ? el > 2500 : step === 0 ? el > 1500 : false;
     if (step === 5 && el < 10000) this.burstConfetti();
     this.opts.onStep?.(step, late);
   }
 
-  private ceremonyPose(): boolean {
+  private ceremonyPose() {
     const c = this.ceremony;
     const step = c ? c.step : -1;
     const el = c ? Math.max(0, Date.now() - c.stepStartedAt) : 0;
@@ -285,17 +344,17 @@ export class WeddingScene {
     }
     const g = this.ents.get('groom');
     const b = this.ents.get('bride');
-    if (!g || !b) return false;
-    if (step < 0) return g.moving || b.moving;
+    if (!g || !b || step < 0) return step;
     if (step === 0) {
-      const tt = clamp(el / 7000, 0, 1);
+      const tt = clamp(el / WALK_MS, 0, 1);
       g.x = -(0.5 + (0.85 - 0.5) * (1 - tt));
       g.z = 9.5 + (-0.5 - 9.5) * tt;
       g.rot = Math.PI / 2;
       b.x = 0.5 + (0.85 - 0.5) * (1 - tt);
       b.z = 9.5 + (-0.5 - 9.5) * tt;
       b.rot = Math.PI * 1.5;
-      return tt < 1;
+      g.moving = b.moving = tt < 1;
+      return step;
     }
     const k = step >= 5 ? clamp(step === 5 ? el / 1500 : 1, 0, 1) : 0;
     g.x = -(0.85 - (0.85 - 0.4) * k);
@@ -304,61 +363,8 @@ export class WeddingScene {
     b.x = 0.85 - (0.85 - 0.4) * k;
     b.z = -0.5;
     b.rot = Math.PI * 1.5;
-    return false;
-  }
-
-  /* ---------- رسم ---------- */
-  private drawFigure(id: string, rec: ActorRec, tSec: number, gold: boolean) {
-    const e = this.ents.get(id);
-    if (!e) return;
-    const p = project(this.cam, this.w, this.h, e.x, e.z);
-    const dir = quantizeDirection(e.rot);
-    const anim = e.moving ? 'walk' : 'idle';
-    const px = clamp(this.cam.zoom / 48, 0.55, 1.4);
-    drawLPCCharacter({
-      ctx: this.ctx,
-      screenX: p.x,
-      screenY: p.y + 6 * px,
-      pxScale: px,
-      direction: dir,
-      anim,
-      t: tSec,
-      appearance: rec.appearance,
-      requestRender: () => {},
-    });
-    drawNameplate(this.ctx, p.x, p.y - 64 * px - 4, rec.name, { gold, scale: px });
-
-    const r = this.reactions.get(id);
-    if (r) {
-      const now = performance.now();
-      if (r.clapUntil > now) {
-        this.ctx.font = `${18 * px}px sans-serif`;
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText('👏', p.x, p.y - 74 * px);
-      }
-      r.hearts = r.hearts.filter((hh) => hh.life > 0);
-      r.hearts.forEach((hh) => {
-        hh.y -= 22 / 60;
-        hh.life -= 1 / 90;
-        this.ctx.save();
-        this.ctx.globalAlpha = clamp(hh.life, 0, 1);
-        this.ctx.font = '16px sans-serif';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText('❤️', p.x + hh.x, p.y - 40 + hh.y);
-        this.ctx.restore();
-      });
-      if (r.hearts.length === 0 && r.clapUntil < now) this.reactions.delete(id);
-    }
-
-    if (id === this.localId) {
-      this.ctx.save();
-      this.ctx.strokeStyle = '#ffd166';
-      this.ctx.lineWidth = 2;
-      this.ctx.beginPath();
-      this.ctx.ellipse(p.x, p.y + 4, 16 * px, 6 * px, 0, 0, Math.PI * 2);
-      this.ctx.stroke();
-      this.ctx.restore();
-    }
+    g.moving = b.moving = false;
+    return step;
   }
 
   private drawConfetti(dt: number) {
@@ -376,6 +382,7 @@ export class WeddingScene {
     });
   }
 
+  /* ---------- الحلقة الرئيسية ---------- */
   private tick = (nowMs: number) => {
     this.raf = requestAnimationFrame(this.tick);
     const dt = Math.min((nowMs - (this.lastT || nowMs)) / 1000, 0.05);
@@ -384,29 +391,112 @@ export class WeddingScene {
 
     this.stepLocal(dt, nowMs);
     this.updateEnts(dt, nowMs);
-    this.ceremonyPose();
+    const step = this.ceremonyPose();
 
-    const k = 1 - Math.pow(0.02, dt);
-    (['cx', 'cz', 'zoom'] as const).forEach((key) => {
-      this.cam[key] += (this.camGoal[key] - this.cam[key]) * k;
-    });
+    /* الكاميرا: تتبّع اللاعب / العرض الشامل / لقطات الحفل */
+    const S = this.targetS();
+    const goal = this.camGoal(step, S);
+    if (!this.camInit) {
+      this.cam = { cx: goal.cx, cz: goal.cz, S };
+      this.camInit = true;
+    }
+    const k = 1 - Math.pow(0.004, dt);
+    this.cam.cx += (goal.cx - this.cam.cx) * k;
+    this.cam.cz += (goal.cz - this.cam.cz) * k;
+    this.cam.S += (S - this.cam.S) * (1 - Math.pow(0.01, dt));
+    if (Math.abs(S - this.cam.S) < 0.05) this.cam.S = S;
 
     const ctx = this.ctx;
-    ctx.save();
-    ctx.scale(this.dpr, this.dpr);
-    ctx.clearRect(0, 0, this.w, this.h);
-    // إزاحة رأسية بسيطة للجوال حتى لا يحجب لوحة التحكم السفلية المشهد (يقابل viewShift ثلاثي الأبعاد)
-    ctx.translate(0, -this.viewShift * this.h * 0.28);
-    drawVenue(ctx, this.cam, this.w, this.h, this.night, tSec);
+    const dpr = this.dpr;
+    const Sc = this.cam.S;
+    const step2 = 1 / (Sc * dpr);
+    const view: View = {
+      cx: Math.round(this.cam.cx / step2) * step2,
+      cz: Math.round(this.cam.cz / step2) * step2,
+      S: Sc,
+      w: this.w,
+      h: this.h,
+      dpr,
+      crisp: this.crisp() && Math.abs(Sc - this.baseS()) < 0.01,
+      night: this.night,
+      t: tSec,
+    };
+    const kArt = Sc / U;
+    const P = (x: number, z: number) => ({ x: this.w / 2 + (x - view.cx) * Sc, y: this.h / 2 + (z - view.cz) * Sc });
+    const snap = (n: number) => Math.round(n * dpr) / dpr;
 
-    const order: { id: string; rec: ActorRec; gold: boolean }[] = [];
-    this.guests.forEach((g, id) => order.push({ id, rec: g.rec, gold: false }));
-    if (this.actors.groom) order.push({ id: 'groom', rec: this.actors.groom, gold: true });
-    if (this.actors.bride) order.push({ id: 'bride', rec: this.actors.bride, gold: true });
-    order
-      .filter((o) => this.ents.has(o.id))
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, this.w, this.h);
+    ctx.save();
+    // إزاحة رأسية عند فتح اللوحة السفلية حتى لا تحجب المشهد
+    ctx.translate(0, -this.viewShift * this.h * 0.28);
+
+    /* اللاعبون كعناصر مرتّبة بالعمق مع المجسّمات */
+    const list: { id: string; rec: ActorRec; gold: boolean }[] = [];
+    this.guests.forEach((g, id) => list.push({ id, rec: g.rec, gold: false }));
+    if (this.actors.groom) list.push({ id: 'groom', rec: this.actors.groom, gold: true });
+    if (this.actors.bride) list.push({ id: 'bride', rec: this.actors.bride, gold: true });
+    const shown = list.filter((o) => this.ents.has(o.id));
+
+    const items: DrawItem[] = shown.map((o) => {
+      const e = this.ents.get(o.id)!;
+      return {
+        x: e.x,
+        z: e.z,
+        draw: (g, sx, sy, kk) => {
+          const dir = directionOf(e.rot);
+          const idx = e.moving ? Math.floor(tSec * 8) : Math.floor(tSec * 1.6);
+          const fr = getAvatarFrame(o.rec.look, dir, e.moving, idx);
+          g.fillStyle = 'rgba(0,0,0,0.26)';
+          g.beginPath();
+          g.ellipse(sx, sy - kk, 7 * kk, 2.6 * kk, 0, 0, Math.PI * 2);
+          g.fill();
+          if (o.id === this.localId) {
+            g.strokeStyle = '#ffd166';
+            g.lineWidth = Math.max(1, kk * 0.9);
+            g.beginPath();
+            g.ellipse(sx, sy - kk, 10 * kk, 4 * kk, 0, 0, Math.PI * 2);
+            g.stroke();
+          }
+          g.drawImage(fr, snap(sx - ANCHOR_X * kk), snap(sy - ANCHOR_Y * kk), AW * kk, AH * kk);
+        },
+      };
+    });
+    renderVenue(ctx, view, items);
+
+    /* لافتات المحطات، ثم أسماء اللاعبين والتفاعلات فوق كل شيء */
+    const fontPx = clamp(kArt * 6.2, 10, 15);
+    drawStationLabels(ctx, view, clamp(kArt * 5.2, 9, 13));
+    shown
+      .slice()
       .sort((a, b) => this.ents.get(a.id)!.z - this.ents.get(b.id)!.z)
-      .forEach((o) => this.drawFigure(o.id, o.rec, tSec, o.gold));
+      .forEach((o) => {
+        const e = this.ents.get(o.id)!;
+        const p = P(e.x, e.z);
+        const top = p.y - (ANCHOR_Y - 3) * kArt;
+        nameplate(ctx, p.x, top - 2, o.rec.name, fontPx, o.gold);
+        const r = this.reactions.get(o.id);
+        if (r) {
+          const now = performance.now();
+          if (r.clapUntil > now) {
+            ctx.font = `${Math.round(fontPx * 1.5)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText('👏', p.x, top - fontPx * 2.4);
+          }
+          r.hearts = r.hearts.filter((hh) => hh.life > 0);
+          r.hearts.forEach((hh) => {
+            hh.y -= 22 / 60;
+            hh.life -= 1 / 90;
+            ctx.save();
+            ctx.globalAlpha = clamp(hh.life, 0, 1);
+            ctx.font = `${Math.round(fontPx * 1.3)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText('❤️', p.x + hh.x, top - fontPx * 2 + hh.y);
+            ctx.restore();
+          });
+          if (r.hearts.length === 0 && r.clapUntil < now) this.reactions.delete(o.id);
+        }
+      });
 
     this.drawConfetti(dt);
     ctx.restore();
@@ -432,6 +522,13 @@ export class WeddingScene {
     };
     let pinch = 0;
     const pts = new Map<number, { x: number; y: number }>();
+    const zoomBy = (f: number) => {
+      const base = this.baseS();
+      const cur = this.overview ? this.fitS() / base : this.zoomMul ?? 1;
+      this.overview = false;
+      this.zoomMul = clamp(cur * f, this.fitS() / base, 2.2);
+      if (Math.abs(this.zoomMul - 1) < 0.06) this.zoomMul = null;
+    };
     const down = (e: PointerEvent) => {
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
       pinch = 0;
@@ -444,10 +541,7 @@ export class WeddingScene {
       if (pts.size === 2) {
         const [a, b] = Array.from(pts.values());
         const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (pinch) {
-          this.userZoom = true;
-          this.camGoal.zoom = clamp(this.camGoal.zoom * (d / pinch), 16, 90);
-        }
+        if (pinch) zoomBy(d / pinch);
         pinch = d;
       }
     };
@@ -457,8 +551,7 @@ export class WeddingScene {
     };
     const wheel = (e: WheelEvent) => {
       e.preventDefault();
-      this.userZoom = true;
-      this.camGoal.zoom = clamp(this.camGoal.zoom * (1 - e.deltaY * 0.001), 16, 90);
+      zoomBy(1 - e.deltaY * 0.001);
     };
     window.addEventListener('keydown', kd);
     window.addEventListener('keyup', ku);

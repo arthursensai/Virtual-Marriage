@@ -7,6 +7,8 @@ export interface StageHandle {
   react: (id: string, kind: ReactKind) => void;
   remotePos: (id: string, x: number, z: number, r: number, moving: boolean) => void;
   setInput: (x: number, y: number) => void;
+  /** عرض الخريطة كاملة بدل تتبّع اللاعب */
+  setOverview: (on: boolean) => void;
 }
 interface Props {
   groom: { name: string; look: Look; pos?: Pos };
@@ -47,6 +49,7 @@ export default function Stage(p: Props) {
       react: (id, k) => sc.react(id, k),
       remotePos: (id, x, z, r, m) => sc.remotePos(id, x, z, r, m),
       setInput: (x, y) => sc.setInput(x, y),
+      setOverview: (on) => sc.setOverview(on),
     };
     const ro = new ResizeObserver(() => sc.resize());
     if (cv.parentElement) ro.observe(cv.parentElement);

@@ -22,6 +22,8 @@ interface Props {
   onChat: () => void;
   panelOpen: boolean;
   onCustomize: () => void;
+  overview: boolean;
+  onOverview: () => void;
 }
 
 const BADGE: Record<Role, string> = { groom: '🤵', bride: '👰', guest: '' };
@@ -53,6 +55,9 @@ export default function WeddingHUD(p: Props) {
       </button>
 
       <div className="hud-side hud-end">
+        <button className={'hud-btn' + (p.overview ? ' on' : '')} onClick={p.onOverview} aria-label="عرض الخريطة كاملة" aria-pressed={p.overview}>
+          🗺️
+        </button>
         {p.canToggleNight && (
           <button className="hud-btn" onClick={p.onNight} aria-label="تبديل الليل والنهار">
             {p.night ? '🌙' : '☀️'}

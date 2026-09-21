@@ -11,7 +11,7 @@ import type { StageHandle } from './WeddingScene';
 import { toRole, type Me } from './types';
 import { DEFAULT_LOOKS, cloneLook } from '@/lib/characters';
 import { derive } from '@/lib/derive';
-import { WALK_MS, type ReactKind } from '@/lib/scene';
+import { WALK_MS, type ReactKind } from '@/lib/scene2d';
 import { chime, ding, setSound, unlockAudio } from '@/lib/sound';
 import type { BrideProxy, Ceremony, Gates, Look, Pos, Presence, Role } from '@/lib/types';
 import { useRoom } from '@/lib/useRoom';
@@ -39,6 +39,10 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
   const { update: roomUpdate, on: roomOn, send: roomSend } = room;
   const joinedAt = useRef(Date.now());
   const stageRef = useRef<StageHandle | null>(null);
+  const [overview, setOverview] = useState(false);
+  useEffect(() => {
+    stageRef.current?.setOverview(overview);
+  }, [overview]);
 
   const [name, setName] = useState(me.name);
   const [look, setLook] = useState<Look>(me.look);
@@ -346,6 +350,8 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
         onChat={() => setChatOpen((o) => !o)}
         panelOpen={panelOpen}
         onCustomize={() => setPanelOpen((o) => !o)}
+        overview={overview}
+        onOverview={() => setOverview((o) => !o)}
       />
       <WeddingControls show={isGroom && room.status === 'online' && step < 0 && !panelOpen && !chatOpen} onStart={startCeremony} />
 
