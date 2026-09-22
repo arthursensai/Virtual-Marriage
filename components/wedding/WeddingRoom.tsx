@@ -289,7 +289,7 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
         target = code;
       }
     }
-    const url = `${window.location.origin}/join?code=${target}`;
+    const url = kind === 'bride' ? `${window.location.origin}/bride?code=${target}` : `${window.location.origin}/join?code=${target}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(kind === 'bride' ? 'نُسخ رابط العروس ✓' : 'نُسخ رابط الضيوف ✓');
@@ -394,7 +394,7 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
                     <input value={proxy.name} maxLength={24} placeholder="اكتب اسمها هنا" onChange={(e) => setProxy((p) => ({ ...p, name: e.target.value }))} />
                   </label>
                   <AvatarCustomizer look={proxy.look} onChange={(l) => setProxy((p) => ({ ...p, look: l }))} defaults={DEFAULT_LOOKS.bride} role="bride" />
-                  <p className="hint">تستطيع إرسال رابط العروس لتخصّص مظهرها وتوقّع من هاتفها بنفسها.</p>
+                  <p className="hint">تستطيع إرسال رابط العروس لتفتح شاشتها الخاصة وتخصّص مظهرها وتوقّع من هاتفها بنفسها. الرمز نفسه يعمل ككلمة سر لو أخبرتها به مباشرة بدون رابط.</p>
                 </>
               )
             )}

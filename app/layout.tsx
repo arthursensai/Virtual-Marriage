@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'حفل زفاف ودّي ثلاثي الأبعاد',
-  description: 'أقم حفل زفاف ودّيًا أونلاين مع الأصدقاء: شخصيات ثلاثية الأبعاد، أزياء مخصّصة، وضيوف يحضرون من هواتفهم.',
+  title: 'حفل محمد وملاك الافتراضي',
+  description: 'حفل زفاف محمد وملاك الافتراضي: شخصيات مخصّصة، وضيوف يحضرون من هواتفهم ليحتفلوا معنا.',
 };
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover' };
 

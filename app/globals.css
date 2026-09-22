@@ -1,18 +1,12 @@
 :root{
-  color-scheme: light dark;
-  --bg:#efe9dc; --panel:rgba(255,253,247,.94); --ink:#15213d; --muted:#5f6577;
-  --gold:#c99a2e; --gold-ink:#1a1405; --rose:#c22a52; --teal:#0f6b5c;
-  --line:rgba(21,33,61,.16); --chip:#ffffff;
+  /* هوية محمد وملاك: أسود وذهبي ثابتان، بلا تبديل حسب وضع الجهاز */
+  color-scheme: dark;
+  --bg:#07060a; --panel:rgba(20,17,10,.92); --ink:#f4ecd8; --muted:#b9ac86;
+  --gold:#d8b55a; --gold-ink:#171206; --rose:#ff6b81; --teal:#3fae86;
+  --line:rgba(216,181,90,.18); --chip:#141009;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#0a1030; --panel:rgba(14,20,46,.94); --ink:#f4ecd8; --muted:#a9aec2;
-    --gold:#f2b544; --gold-ink:#1a1405; --rose:#ff7b9c; --teal:#4fd1b4;
-    --line:rgba(244,236,216,.18); --chip:#19224a;
-  }
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -24,10 +18,10 @@ a{color:inherit}
 
 /* ---------- الصفحة الرئيسية ---------- */
 .home{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
-  background:radial-gradient(1200px 600px at 80% -10%, rgba(242,181,68,.22), transparent 60%), radial-gradient(900px 500px at 0% 110%, rgba(15,107,92,.28), transparent 60%), #0a1030;color:#f4ecd8}
+  background:radial-gradient(1200px 600px at 80% -10%, rgba(216,181,90,.20), transparent 60%), radial-gradient(900px 500px at 0% 110%, rgba(216,181,90,.10), transparent 60%), #07060a;color:#f4ecd8}
 .home .box{width:min(560px,100%);text-align:center}
 .home h1{font-size:clamp(2rem,6vw,3rem);font-weight:800;margin:0 0 .4rem;letter-spacing:0}
-.home p.lead{margin:0 0 1.6rem;line-height:1.9;color:#c9cde0;font-size:1.05rem}
+.home p.lead{margin:0 0 1.6rem;line-height:1.9;color:#cabf9c;font-size:1.05rem}
 .home .card{background:rgba(255,255,255,.06);border:1px solid rgba(244,236,216,.2);border-radius:20px;padding:18px;margin-bottom:14px;text-align:start}
 .home .card h2{margin:0 0 10px;font-size:1.05rem}
 .home .row2{display:flex;gap:8px}
@@ -102,7 +96,7 @@ a{color:inherit}
 .chat form{display:flex;gap:6px;padding:8px;border-top:1px solid var(--line)}
 .chat input{flex:1;min-width:0;padding:.5rem .7rem;border-radius:12px;border:1px solid var(--line);background:var(--chip);color:var(--ink)}
 
-.overlay{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;background:rgba(5,8,22,.66);padding:16px;overflow:auto}
+.overlay{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;background:rgba(4,3,2,.74);padding:16px;overflow:auto}
 .cert{width:min(520px,100%);background:#fbf6e8;color:#15213d;border-radius:6px;padding:26px 22px 20px;text-align:center;
   outline:3px solid #15213d;outline-offset:-10px;box-shadow:0 0 0 6px #c99a2e inset, 0 20px 60px rgba(0,0,0,.5)}
 .cert small{color:#6b6f7b}
@@ -119,7 +113,7 @@ a{color:inherit}
 .center-msg div{max-width:440px;line-height:1.9}
 
 /* عصا الحركة: تظهر على شاشات اللمس فقط، وموضعها ثابت (لا تنعكس مع RTL) */
-.joy{position:absolute;left:calc(18px + env(safe-area-inset-left,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));width:120px;height:120px;border-radius:50%;background:rgba(12,16,38,.5);border:1px solid var(--line);z-index:2;touch-action:none;display:none;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none}
+.joy{position:absolute;left:calc(18px + env(safe-area-inset-left,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));width:120px;height:120px;border-radius:50%;background:rgba(10,8,4,.5);border:1px solid var(--line);z-index:2;touch-action:none;display:none;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none}
 .joy-knob{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a8,var(--gold));box-shadow:0 2px 8px rgba(0,0,0,.4);pointer-events:none}
 @media (pointer:coarse){.joy{display:flex}}
 @media (max-width:720px){
@@ -135,15 +129,15 @@ a{color:inherit}
 .hud>*{pointer-events:auto}
 .hud-side{display:flex;gap:8px;justify-self:start;grid-row:1}
 .hud-end{justify-self:end}
-.hud-btn{position:relative;width:44px;height:44px;border-radius:14px;border:1px solid rgba(216,181,90,.35);background:rgba(12,16,38,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.hud-btn{position:relative;width:44px;height:44px;border-radius:14px;border:1px solid rgba(216,181,90,.35);background:rgba(10,8,4,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .hud-btn.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(216,181,90,.25)}
 .hud-btn:disabled{opacity:.45;cursor:default}
 .hud-btn:active:not(:disabled){transform:scale(.94)}
 .hud-badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--rose);color:#fff;font-size:.7rem;display:flex;align-items:center;justify-content:center;padding:0 4px}
-.hud-pill{grid-row:1;cursor:pointer;display:flex;gap:8px;align-items:center;height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(216,181,90,.35);background:rgba(12,16,38,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font-size:.95rem;font-weight:700}
+.hud-pill{grid-row:1;cursor:pointer;display:flex;gap:8px;align-items:center;height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(216,181,90,.35);background:rgba(10,8,4,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font-size:.95rem;font-weight:700}
 .hud-pill b{letter-spacing:.12em;color:var(--gold)}
 .hud-backdrop{position:fixed;inset:0;z-index:3;background:transparent}
-.hud-list{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:min(260px,calc(100vw - 24px));max-height:50vh;overflow:auto;z-index:4;background:rgba(12,16,38,.94);border:1px solid rgba(216,181,90,.35);border-radius:16px;padding:6px}
+.hud-list{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:min(260px,calc(100vw - 24px));max-height:50vh;overflow:auto;z-index:4;background:rgba(10,8,4,.94);border:1px solid rgba(216,181,90,.35);border-radius:16px;padding:6px}
 .hud-row{display:flex;align-items:center;gap:8px;padding:.5rem .6rem;border-radius:10px}
 .hud-row span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hud-row.off{opacity:.55}
@@ -178,7 +172,7 @@ a{color:inherit}
 
 /* ===== مخصّص الشخصية (LPC) ===== */
 .lpc-prev{display:flex;flex-direction:column;align-items:center;gap:4px;margin:6px 0 10px}
-.lpc-turn{cursor:pointer;background:radial-gradient(circle at 50% 30%,rgba(216,181,90,.18),rgba(12,16,38,.6));border:1px solid var(--line);border-radius:18px;padding:6px;line-height:0}
+.lpc-turn{cursor:pointer;background:radial-gradient(circle at 50% 30%,rgba(216,181,90,.18),rgba(10,8,4,.6));border:1px solid var(--line);border-radius:18px;padding:6px;line-height:0}
 .tabs2{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;margin:8px 0 2px;-webkit-overflow-scrolling:touch}
 .tabs2 .chip{flex:none}
 .item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px}
