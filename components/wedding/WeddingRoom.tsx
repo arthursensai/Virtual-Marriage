@@ -340,6 +340,7 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
       <WeddingHUD
         code={code}
         players={players}
+        myId={id}
         sound={sound}
         onSound={() => setSoundOn((s) => !s)}
         night={night}
@@ -498,7 +499,7 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
         </section>
       )}
 
-      {inCeremony && room.status === 'online' && (
+      {(inCeremony || step === 6) && room.status === 'online' && (
         <div className="reacts">
           <button onClick={() => react('clap')} aria-label="تصفيق">👏</button>
           <button onClick={() => react('heart')} aria-label="قلب">❤️</button>

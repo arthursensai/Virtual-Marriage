@@ -12,6 +12,7 @@ export interface HudPlayer {
 interface Props {
   code: string;
   players: HudPlayer[];
+  myId?: string;
   sound: boolean;
   onSound: () => void;
   night: boolean;
@@ -32,6 +33,8 @@ const BADGE: Record<Role, string> = { groom: '🤵', bride: '👰', guest: '' };
 export default function WeddingHUD(p: Props) {
   const [list, setList] = useState(false);
   const online = p.players.filter((x) => x.online).length;
+  const groom = p.players.find((x) => x.role === 'groom');
+  const bride = p.players.find((x) => x.role === 'bride');
 
   return (
     <div className="hud" dir="ltr">
@@ -50,7 +53,10 @@ export default function WeddingHUD(p: Props) {
 
       <button className="hud-pill" onClick={() => setList((o) => !o)} aria-expanded={list} aria-label="اللاعبون">
         <b>{p.code}</b>
-        <span>•</span>
+        <span className="hud-couple" aria-hidden="true">
+          <em className={groom?.online ? 'on' : ''}>🤵</em>
+          <em className={bride?.online ? 'on' : ''}>👰</em>
+        </span>
         <span>{online} 👥</span>
       </button>
 
@@ -73,9 +79,10 @@ export default function WeddingHUD(p: Props) {
           <div className="hud-backdrop" onClick={() => setList(false)} />
           <div className="hud-list" dir="rtl" role="list">
             {p.players.map((x) => (
-              <div key={x.id} className={'hud-row' + (x.online ? '' : ' off')} role="listitem">
+              <div key={x.id} className={'hud-row' + (x.online ? '' : ' off') + (x.id === p.myId ? ' me' : '')} role="listitem">
                 <i className={'dot' + (x.online ? ' on' : '')} aria-label={x.online ? 'متصل' : 'غير متصل'} />
                 <span dir="auto">{x.name}</span>
+                {x.id === p.myId && <em className="you">أنت</em>}
                 {BADGE[x.role] && <em>{BADGE[x.role]}</em>}
               </div>
             ))}

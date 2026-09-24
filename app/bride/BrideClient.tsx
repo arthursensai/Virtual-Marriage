@@ -6,10 +6,10 @@ import { joinWedding, friendlyError } from '@/lib/wedding';
 import { cloneLook, DEFAULT_LOOKS } from '@/lib/looks';
 
 /**
- * شاشة دخول مخصّصة لملاك: اسمها + "كلمة السر" (وهي رمز العروس السرّي نفسه
- * الذي يحصل عليه محمد من لوحة التحكم). لا حاجة لبريد إلكتروني أو حساب Google —
- * الجلسة تُنشأ تلقائيًا (تسجيل دخول مجهول) خلف الكواليس، ودور "العروسة"
- * يُحسم في الخادم بنفس الطريقة المعتادة عند إرسال الرمز الصحيح.
+ * شاشة دخول مخصّصة لملاك: اسمها + "كلمة السر" (رمز العروس السرّي الذي يحصل
+ * عليه محمد من لوحة التحكم). لا حاجة لبريد إلكتروني أو حساب Google — يُنشأ
+ * لها حساب حقيقي (وليس مجهولًا) تلقائيًا خلف الكواليس عبر /api/bride-account،
+ * بحيث تستطيع الدخول بنفس كلمة السر من أي جهاز لاحقًا.
  */
 export default function BrideClient() {
   const router = useRouter();
@@ -32,12 +32,17 @@ export default function BrideClient() {
       const sb = getSupabase();
       if (!sb) throw new Error('missing-config');
 
-      // تأكّدي من وجود جلسة؛ إن لم توجد أنشئي واحدة مجهولة (بلا بريد ولا كلمة سر حساب)
-      const { data: sess } = await sb.auth.getSession();
-      if (!sess.session) {
-        const { error } = await sb.auth.signInAnonymously();
-        if (error) throw error;
-      }
+      // اطلبي من الخادم إنشاء/تحديث حساب حقيقي لهذه كلمة السر (ليس مجهولًا)
+      const res1 = await fetch('/api/bride-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: password }),
+      });
+      const body = await res1.json();
+      if (!res1.ok) throw new Error(body?.error || 'كلمة السر غير صحيحة.');
+
+      const { error: signInErr } = await sb.auth.signInWithPassword({ email: body.email, password });
+      if (signInErr) throw signInErr;
 
       const res = await joinWedding(password, name.trim() || 'العروسة', cloneLook(DEFAULT_LOOKS.bride));
       router.push(`/wedding/${res.code}`);
