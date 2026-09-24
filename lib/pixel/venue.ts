@@ -11,7 +11,10 @@ export const U = 20;
 export const X0 = -12;
 export const Z0 = -9;
 export const WU = 24;
-export const HU = 27;
+export const HU = 31;
+
+/** أقصى حد جنوبي للعريس/العروسة قبل بدء الحفل فقط (غرفة خاصة خلف الضيوف) */
+export const BACKSTAGE_MAX_Z = 17.4;
 
 export const BOUNDS = { minX: -9.2, maxX: 9.2, minZ: -4.6, maxZ: 13.6 };
 
@@ -161,6 +164,19 @@ function buildGround(): HTMLCanvasElement {
   q.r(gx0 - 2, py1, 2, az(18.2) - py1, '#b7a888');
   q.r(gx1, py1, 2, az(18.2) - py1, '#b7a888');
 
+  /* غرفة خاصة خلف الضيوف (خلف البوابة): مكان يجهّز فيه العروسان قبل الدخول */
+  const bx0 = ax(-3.5);
+  const bx1 = ax(3.5);
+  const by0 = az(14.05);
+  const by1 = az(17.4);
+  q.r(bx0 - 4, by0 - 4, bx1 - bx0 + 8, by1 - by0 + 8, '#8f7a52'); // ظل/حدّ
+  q.r(bx0 - 2, by0 - 2, bx1 - bx0 + 4, by1 - by0 + 4, '#cbbd9f');
+  q.r(bx0, by0, bx1 - bx0, by1 - by0, '#e7dcc4');
+  q.r(bx0, by0, bx1 - bx0, 1, GOLD);
+  q.r(bx0, by1 - 1, bx1 - bx0, 1, GOLD);
+  q.r(bx0, by0, 1, by1 - by0, GOLD);
+  q.r(bx1 - 1, by0, 1, by1 - by0, GOLD);
+
   /* السجادة الحمراء */
   const cx0 = ax(-0.75);
   const cx1 = ax(0.75);
@@ -256,6 +272,9 @@ function buildGround(): HTMLCanvasElement {
   hedgeV(9.9, -5.55, 14.05);
   hedgeH(ax(-9.9), ax(-1.6), 14.05);
   hedgeH(ax(1.6), ax(9.9), 14.05);
+  hedgeH(ax(-3.6), ax(3.6), 17.4);
+  hedgeV(-3.6, 14.05, 17.4);
+  hedgeV(3.6, 14.05, 17.4);
 
   /* أعمدة الفوانيس وحبال الإضاءة */
   const pole = (x: number, z: number) => {
@@ -292,6 +311,7 @@ export const LANTERNS: [number, number][] = [
   [-8, -5.15], [-4, -5.15], [4, -5.15], [8, -5.15],
   [-9.5, -3.4], [-9.5, 1], [-9.5, 5.4], [-9.5, 9.8], [-9.5, 13.6],
   [9.5, -3.4], [9.5, 1], [9.5, 5.4], [9.5, 9.8], [9.5, 13.6],
+  [-2.8, 16], [2.8, 16],
 ];
 
 /* ============================================================

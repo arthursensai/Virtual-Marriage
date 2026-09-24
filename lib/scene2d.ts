@@ -3,11 +3,11 @@ import type { Look } from './types';
 import { clamp, hash } from './util';
 import { directionOf } from './pixel/avatar';
 import { getAvatarSprite } from './avatar/sprite';
-import { BOUNDS, HU, OBSTACLES_2D, U, WU, X0, Z0, drawStationLabels, renderVenue, type DrawItem, type View } from './pixel/venue';
+import { BACKSTAGE_MAX_Z, BOUNDS, HU, OBSTACLES_2D, U, WU, X0, Z0, drawStationLabels, renderVenue, type DrawItem, type View } from './pixel/venue';
 // أنواع فقط من ملف three.js (تُحذف عند البناء، فلا يُحمَّل three في نسخة 2D)
 import type { ReactKind, SceneActor, SceneCeremony, SceneGuest, SceneOptions } from './scene';
 
-export const WALK_MS = 7000;
+export const WALK_MS = 9500;
 export const MAX_GUESTS = 20;
 export type { ReactKind, SceneActor, SceneGuest, SceneCeremony, SceneOptions } from './scene';
 
@@ -126,7 +126,7 @@ export class WeddingScene {
     this.actorKey[role] = key;
     this.actors[role] = { name: a.name, look: a.look };
     if (!this.ents.has(role)) {
-      const sp = a.pos ?? { x: role === 'groom' ? -0.85 : 0.85, z: -0.5, r: role === 'groom' ? Math.PI / 2 : Math.PI * 1.5 };
+      const sp = a.pos ?? { x: role === 'groom' ? -0.7 : 0.7, z: 16, r: role === 'groom' ? Math.PI / 2 : Math.PI * 1.5 };
       this.ents.set(role, { x: sp.x, z: sp.z, tx: sp.x, tz: sp.z, rot: sp.r, trot: sp.r, moving: false, seen: 0 });
     }
   }
@@ -164,7 +164,7 @@ export class WeddingScene {
     const e = this.ents.get(id);
     if (!e || id === this.localId) return;
     e.tx = clamp(x, BOUNDS.minX, BOUNDS.maxX);
-    e.tz = clamp(z, BOUNDS.minZ, BOUNDS.maxZ);
+    e.tz = clamp(z, BOUNDS.minZ, this.maxZFor(id));
     e.trot = r;
     e.moving = moving;
     e.seen = performance.now();
@@ -265,9 +265,10 @@ export class WeddingScene {
   }
 
   /* ---------- التصادم والحركة ---------- */
-  private collide(x: number, z: number) {
+  private collide(x: number, z: number, maxZ: number) {
     let nx = clamp(x, BOUNDS.minX, BOUNDS.maxX);
-    let nz = clamp(z, BOUNDS.minZ, BOUNDS.maxZ);
+    let nz = clamp(z, BOUNDS.minZ, maxZ);
+    if (nz > 14.0) nx = clamp(nx, -3.3, 3.3); // داخل سياج الغرفة الخاصة
     for (const o of OBSTACLES_2D) {
       const dx = nx - o.x;
       const dz = nz - o.z;
@@ -283,6 +284,12 @@ export class WeddingScene {
 
   private scripted(id: string) {
     return (id === 'groom' || id === 'bride') && !!this.ceremony && this.ceremony.step >= 0;
+  }
+
+  /** العريس والعروسة فقط، وقبل بدء الحفل فقط، يقدرون يدخلون الغرفة الخاصة خلف البوابة */
+  private maxZFor(id: string | null) {
+    if ((id === 'groom' || id === 'bride') && (!this.ceremony || this.ceremony.step < 0)) return BACKSTAGE_MAX_Z;
+    return BOUNDS.maxZ;
   }
 
   private stepLocal(dt: number, nowP: number) {
@@ -304,7 +311,7 @@ export class WeddingScene {
       const vx = ix;
       const vz = -iy;
       const sp = SPEED * Math.min(1, len);
-      const c = this.collide(e.x + vx * sp * dt, e.z + vz * sp * dt);
+      const c = this.collide(e.x + vx * sp * dt, e.z + vz * sp * dt, this.maxZFor(id));
       e.x = c.x;
       e.z = c.z;
       e.trot = Math.atan2(vx, vz);
@@ -350,11 +357,11 @@ export class WeddingScene {
     if (!g || !b || step < 0) return step;
     if (step === 0) {
       const tt = clamp(el / WALK_MS, 0, 1);
-      g.x = -(0.5 + (0.85 - 0.5) * (1 - tt));
-      g.z = 9.5 + (-0.5 - 9.5) * tt;
+      g.x = -(0.5 + (0.7 - 0.5) * (1 - tt));
+      g.z = 16 + (-0.5 - 16) * tt;
       g.rot = Math.PI / 2;
-      b.x = 0.5 + (0.85 - 0.5) * (1 - tt);
-      b.z = 9.5 + (-0.5 - 9.5) * tt;
+      b.x = 0.5 + (0.7 - 0.5) * (1 - tt);
+      b.z = 16 + (-0.5 - 16) * tt;
       b.rot = Math.PI * 1.5;
       g.moving = b.moving = tt < 1;
       return step;
