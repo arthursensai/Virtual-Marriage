@@ -54,6 +54,17 @@ export interface Presence {
   gates?: Gates;
   proxy?: BrideProxy;
   pos?: Pos;
+  /** آخر حالة موسيقى معروفة — يحملها العريس فقط، تُستخدم كخط أساس لمن ينضم متأخرًا */
+  music?: MusicState;
+}
+
+/** حالة الموسيقى المشتركة (نفس النوع في lib/music/musicSync.ts، مكرّر هنا لتجنّب حلقة استيراد) */
+export interface MusicState {
+  trackId: string | null;
+  playing: boolean;
+  startedAt: number | null;
+  positionAtStart: number;
+  updatedAt: number;
 }
 
 export interface PersonView {

@@ -25,6 +25,8 @@ export interface Obstacle2D {
 }
 
 export const DANCE = { x: 6.2, z: 6.6, size: 4.4 };
+/** موضع منصّة الدي جي: على حافة ساحة الرقص الشرقية، بنفس ثابت lib/npc/dj.ts */
+export const DJ_BOOTH = { x: DANCE.x + DANCE.size / 2 + 0.3, z: DANCE.z };
 const ALTAR = { x: 0, z: -0.5, r: 2.9 };
 const GOLD = '#d8b55a';
 
@@ -38,11 +40,13 @@ export const OBSTACLES_2D: Obstacle2D[] = (() => {
   [-1.5, -0.75, 0, 0.75, 1.5].forEach((x) => list.push({ x, z: -1.7, r: 0.3 })); // القوس
   [-1.6, -0.8, 0, 0.8, 1.6].forEach((k) => list.push({ x: -6.2 + k, z: -3.6, r: 0.55 })); // خلفية التصوير
   [[-3.6, -1.9], [3.6, -1.9], [-3.9, 0.9], [3.9, 0.9]].forEach(([x, z]) => list.push({ x, z, r: 0.5 })); // الشجيرات
+  list.push({ x: DJ_BOOTH.x, z: DJ_BOOTH.z, r: 0.9 }); // منصّة الدي جي
   return list;
 })();
 
 export const STATIONS = [
   { label: '💃 ساحة الرقص', x: DANCE.x, z: DANCE.z - 2.4, up: 4 },
+  { label: '🎧 الدي جي', x: DJ_BOOTH.x, z: DJ_BOOTH.z - 1.5, up: 40 },
   { label: '🎂 الكعكة', x: -6.2, z: 5.6, up: 52 },
   { label: '🎁 الهدايا', x: -6.2, z: 9.4, up: 40 },
   { label: '⛲ النافورة', x: 6.4, z: 0.8, up: 46 },
@@ -541,6 +545,48 @@ function fountainSprite(): Sprite {
   return s;
 }
 
+function djSprite(): Sprite {
+  const s = sprite(60, 54, 30, 44, DJ_BOOTH.x, DJ_BOOTH.z, (q) => {
+    const cx = 30;
+    const base = 44;
+    q.ell(cx, base, 24, 6, 'rgba(0,0,0,0.22)');
+    // منضدة الدي جي
+    q.r(cx - 20, base - 20, 40, 18, '#3b2f4a');
+    q.r(cx - 20, base - 20, 40, 3, GOLD);
+    q.r(cx + 17, base - 20, 3, 18, '#2a2138');
+    q.r(cx - 20, base - 2, 40, 2, '#2a2138');
+    // جهاز التحكّم (مِكسر بسيط)
+    q.r(cx - 14, base - 30, 28, 11, '#20182e');
+    q.r(cx - 14, base - 30, 28, 2, '#4a3b66');
+    for (let i = 0; i < 4; i++) q.r(cx - 11 + i * 6, base - 27, 3, 5, '#6c5a94');
+    q.disc(cx - 6, base - 24, 3, '#e8c86b');
+    q.disc(cx + 6, base - 24, 3, '#e8c86b');
+    // سماعة رأس معلّقة على حافة المنضدة
+    q.ell(cx - 16, base - 20, 4, 3, '#1c1626');
+    q.r(cx - 19, base - 22, 2, 5, '#1c1626');
+    q.r(cx - 14, base - 22, 2, 5, '#1c1626');
+    // مكبّرا صوت صغيران على الجانبين
+    const speaker = (x: number) => {
+      q.r(x - 4, base - 34, 8, 16, '#241b33');
+      q.r(x - 4, base - 34, 8, 2, GOLD);
+      q.disc(x, base - 27, 3, '#4a3b66');
+      q.disc(x, base - 20, 2.4, '#4a3b66');
+    };
+    speaker(cx - 24);
+    speaker(cx + 24);
+  });
+  s.fx = (g, sx, sy, k, t) => {
+    // إشعاع دائري نابض بلون دافئ فوق المنضدة (لا يعتمد على المزامنة، مجرّد حيوية بصرية)
+    const q = new Q(g);
+    const pulse = 0.35 + 0.25 * Math.sin(t * 2.4);
+    q.g.save();
+    q.g.globalAlpha = Math.max(0, pulse);
+    q.disc(sx, sy - 26 * k, 10 * k, '#ffd166');
+    q.g.restore();
+  };
+  return s;
+}
+
 function photoSprite(): Sprite {
   return sprite(76, 66, 38, 56, -6.2, -3.6, (q) => {
     const rnd = rng(21);
@@ -628,7 +674,7 @@ export function getProps(): Sprite[] {
   const list: Sprite[] = [];
   let i = 0;
   for (const side of [-1, 1]) for (const col of [1.75, 2.6]) for (let row = 0; row < 4; row++) list.push(chairSprite(side * col, 2.6 + row * 1.5, i++));
-  list.push(archSprite(), cakeSprite(), giftSprite(), fountainSprite(), photoSprite(), gateSprite());
+  list.push(archSprite(), cakeSprite(), giftSprite(), fountainSprite(), photoSprite(), gateSprite(), djSprite());
   [[-3.6, -1.9], [3.6, -1.9], [-3.9, 0.9], [3.9, 0.9]].forEach(([x, z], k) => list.push(bushSprite(x, z, 30 + k)));
   [[-9, -4.9], [9, -4.9], [-9, 13.4], [9, 13.4], [-2, 13.5], [2, 13.5]].forEach(([x, z], k) => list.push(bushSprite(x, z, 60 + k)));
   propsCache = list;

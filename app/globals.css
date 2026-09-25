@@ -181,3 +181,19 @@ a{color:inherit}
 .item small{font-size:.7rem;line-height:1.2;text-align:center}
 .item .none{font-size:1.4rem;opacity:.6}
 .chip .dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle}
+
+/* ===== الدي جي والموسيقى ===== */
+.dj-prompt{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:2;cursor:pointer;background:var(--panel);border:1px solid var(--gold);border-radius:999px;padding:.6rem 1.1rem;font-weight:700;font-size:.92rem;color:var(--ink);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.dj-prompt:active{transform:translateX(-50%) scale(.96)}
+.dj-panel .track-name{font-weight:800;font-size:1.05rem;margin:2px 0 10px}
+.dj-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 0}
+.dj-controls button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--chip);font-size:1.1rem;cursor:pointer;color:inherit}
+.dj-controls button.play{width:56px;height:56px;background:var(--gold);color:var(--gold-ink);font-size:1.3rem;border:0}
+.dj-list{display:flex;flex-direction:column;gap:6px;margin-top:4px;max-height:160px;overflow-y:auto}
+.dj-list button{text-align:start;cursor:pointer;background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:.45rem .7rem;font-size:.85rem;color:inherit}
+.dj-list button.on{border-color:var(--gold);background:rgba(216,181,90,.15);font-weight:700}
+.dj-vol{display:flex;align-items:center;gap:8px;margin-top:14px}
+.dj-vol input[type=range]{flex:1}
+@media (max-width:720px){
+  .dj-prompt{bottom:calc(168px + env(safe-area-inset-bottom,0px))}
+}

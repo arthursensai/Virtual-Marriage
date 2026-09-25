@@ -7,6 +7,7 @@ import Joystick from './Joystick';
 import WeddingChat from './WeddingChat';
 import WeddingControls from './WeddingControls';
 import WeddingHUD, { type HudPlayer } from './WeddingHUD';
+import DJPanel from './DJPanel';
 import type { StageHandle } from './WeddingScene';
 import { toRole, type Me } from './types';
 import { DEFAULT_LOOKS, cloneLook } from '@/lib/looks';
@@ -15,6 +16,9 @@ import { WALK_MS, type ReactKind } from '@/lib/scene2d';
 import { chime, ding, setSound, unlockAudio } from '@/lib/sound';
 import type { BrideProxy, Ceremony, Gates, Look, Pos, Presence, Role } from '@/lib/types';
 import { useRoom } from '@/lib/useRoom';
+import { DJ_NPC } from '@/lib/npc/dj';
+import { isNearNPC } from '@/lib/npc/npc';
+import { useMusicSync } from '@/lib/music/musicSync';
 import { useChat } from '@/features/chat/useChat';
 import { getSupabase } from '@/lib/supabase';
 import { getWifeCode, setWeddingStatus, type WeddingStatus } from '@/lib/wedding';
@@ -65,6 +69,8 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
   const [now, setNow] = useState(() => Date.now());
   const [copied, setCopied] = useState('');
   const lastReact = useRef(0);
+  const [nearDJ, setNearDJ] = useState(false);
+  const [djOpen, setDjOpen] = useState(false);
 
   /* ---- حفظ محلي لمظهر المستخدم ---- */
   useEffect(() => {
@@ -147,6 +153,28 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
   );
   const view = useMemo(() => derive(all), [all]);
 
+  /* ---- الدي جي: حالة الموسيقى المشتركة (بثّ لحظي + خط أساس من Presence العريس) ---- */
+  const canControlMusic = role === 'groom' || role === 'bride';
+  const {
+    musicState,
+    playTrack: djPlayTrack,
+    resume: djResume,
+    pause: djPause,
+    next: djNext,
+    prev: djPrev,
+  } = useMusicSync({
+    roomOnline: room.status === 'online',
+    roomSend,
+    roomOn,
+    presenceBaseline: view.music,
+    canControl: canControlMusic,
+  });
+  useEffect(() => {
+    // العريس فقط يحمل نسخة الموسيقى الحالية في Presence، لتصل لمن ينضم متأخرًا
+    if (!loaded || role !== 'groom') return;
+    roomUpdate({ ...mine, music: musicState });
+  }, [loaded, role, mine, musicState, roomUpdate]);
+
   /* ---- قائمة اللاعبين (متصل/غير متصل) وأسماء المرسلين ---- */
   const players = useMemo<HudPlayer[]>(() => {
     const live = new Map(all.map((p) => [p.id, p]));
@@ -177,6 +205,10 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
     (x: number, z: number, r: number, m: boolean) => {
       roomSend('pos', { id, x, z, r, m });
       if (!m) setMyPos({ x, z, r });
+      setNearDJ((was) => {
+        const near = isNearNPC(DJ_NPC, x, z);
+        return near === was ? was : near;
+      });
     },
     [roomSend, id],
   );
@@ -191,6 +223,20 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
       stageRef.current?.remotePos(r === 'guest' ? q.id : r, q.x, q.z, q.r, !!q.m);
     });
   }, [roomOn, id]);
+
+  /* ---- تفاعل الدي جي: زر E على الحاسوب ---- */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== 'e') return;
+      const tag = (document.activeElement?.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea') return;
+      if (!nearDJ || chatOpen || panelOpen || djOpen) return;
+      setDjOpen(true);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [nearDJ, chatOpen, panelOpen, djOpen]);
+
   const ceremony = view.ceremony;
   const step = ceremony?.step ?? -1;
   const round = ceremony?.round ?? 0;
@@ -508,6 +554,25 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
       )}
 
       {room.status === 'online' && !panelOpen && !chatOpen && !inCeremony && <Joystick onChange={(x, y) => stageRef.current?.setInput(x, y)} />}
+
+      {room.status === 'online' && nearDJ && !djOpen && !panelOpen && !chatOpen && (
+        <button type="button" className="dj-prompt" onClick={() => setDjOpen(true)}>
+          {DJ_NPC.label} — اضغط E للتفاعل (أو اضغط هنا)
+        </button>
+      )}
+
+      {djOpen && (
+        <DJPanel
+          onClose={() => setDjOpen(false)}
+          canControl={canControlMusic}
+          musicState={musicState}
+          onPlayTrack={djPlayTrack}
+          onResume={djResume}
+          onPause={djPause}
+          onNext={djNext}
+          onPrev={djPrev}
+        />
+      )}
 
       {chatOpen && <WeddingChat rows={chat.rows} names={names} myPid={me.participantId} onSend={chat.send} onClose={() => setChatOpen(false)} />}
 

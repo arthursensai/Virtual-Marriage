@@ -1,4 +1,4 @@
-import type { Ceremony, GuestInfo, Look, Presence, PersonView } from './types';
+import type { Ceremony, GuestInfo, Look, MusicState, Presence, PersonView } from './types';
 import { DEFAULT_LOOKS } from './looks';
 
 export interface RoomView {
@@ -9,6 +9,8 @@ export interface RoomView {
   bride: PersonView;
   guests: GuestInfo[];
   count: number;
+  /** آخر حالة موسيقى يحملها العريس في Presence — خط أساس لمن ينضم متأخرًا فقط */
+  music: MusicState | null;
 }
 
 const byJoined = (a: Presence, b: Presence) => a.joinedAt - b.joinedAt || a.id.localeCompare(b.id);
@@ -47,5 +49,6 @@ export function derive(all: Presence[]): RoomView {
     bride,
     guests: guestsP.map((p) => ({ id: p.id, name: p.name || 'ضيف', look: p.look, pos: p.pos })),
     count: all.length,
+    music: groomP?.music ?? null,
   };
 }

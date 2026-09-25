@@ -254,9 +254,10 @@ export class WeddingScene { private ctx:
   private collide(x: number, z: number, maxZ: 
   number) {
     let nx = clamp(x, BOUNDS.minX, BOUNDS.maxX); let 
-    nz = clamp(z, BOUNDS.minZ, maxZ); if (nz > 14.0) 
-    nx = clamp(nx, -3.3, 3.3); // داخل سياج الغرفة 
-    الخاصة for (const o of OBSTACLES_2D) {
+    nz = clamp(z, BOUNDS.minZ, maxZ);
+    // داخل سياج الغرفة الخاصة
+    if (nz > 14.0) nx = clamp(nx, -3.3, 3.3);
+    for (const o of OBSTACLES_2D) {
       const dx = nx - o.x; const dz = nz - o.z; 
       const d = Math.hypot(dx, dz); const min = o.r 
       + PLAYER_R; if (d < min && d > 1e-4) {
@@ -272,9 +273,9 @@ export class WeddingScene { private ctx:
     this.ceremony.step >= 0;
   }
 
-  /** العريس والعروسة فقط، وقبل بدء الحفل فقط، 
-  يقدرون يدخلون الغرفة الخاصة خلف البوابة */ private 
-  maxZFor(id: string | null) {
+  /** العريس والعروسة فقط، وقبل بدء الحفل فقط،
+  يقدرون يدخلون الغرفة الخاصة خلف البوابة */
+  private maxZFor(id: string | null) {
     if ((id === 'groom' || id === 'bride') && 
     (!this.ceremony || this.ceremony.step < 0)) 
     return BACKSTAGE_MAX_Z; return BOUNDS.maxZ;
@@ -321,8 +322,8 @@ export class WeddingScene { private ctx:
     });
   }
 
-  /* ---------- مراحل الحفل ---------- */ private 
-  enterStep(step: number, el: number) {
+  /* ---------- مراحل الحفل ---------- */
+  private enterStep(step: number, el: number) {
     const late = step === 5 ? el > 2500 : step === 0 
     ? el > 1500 : false; if (step === 5 && el < 
     10000) this.burstConfetti(); 
@@ -345,11 +346,11 @@ export class WeddingScene { private ctx:
       (-0.5 - 16) * tt; b.x = 0.5 + (0.7 - 0.5) * (1 
       - tt); b.z = 16 + (-0.5 - 16) * tt; if (tt < 
       1) {
-        g.rot = b.rot = Math.PI; // يمشيان للأمام 
-        نحو المذبح
+        // يمشيان للأمام نحو المذبح
+        g.rot = b.rot = Math.PI;
       } else {
-        g.rot = Math.PI / 2; // وصلا: يتقابلان b.rot 
-        = Math.PI * 1.5;
+        // وصلا: يتقابلان
+        g.rot = Math.PI / 2; b.rot = Math.PI * 1.5;
       }
       g.moving = b.moving = tt < 1; return step;
     }
@@ -496,8 +497,8 @@ export class WeddingScene { private ctx:
     this.drawConfetti(dt); ctx.restore();
   };
 
-  /* ---------- التحكم ---------- */ private 
-  bindControls() {
+  /* ---------- التحكم ---------- */
+  private bindControls() {
     const keyMap: Record<string, 'u' | 'd' | 'l' | 
       'r'> = { KeyW: 'u', ArrowUp: 'u', KeyS: 'd', 
       ArrowDown: 'd', KeyA: 'l', ArrowLeft: 'l', 
@@ -554,8 +555,15 @@ export class WeddingScene { private ctx:
     up); 
     this.canvas.addEventListener('pointercancel', 
     up); this.canvas.addEventListener('wheel', 
-    wheel, { passive: false }); this.cleanup.push(() 
-    => {
+    wheel, { passive: false }); this.cleanup.push(() => {
       window.removeEventListener('keydown', kd); 
       window.removeEventListener('keyup', ku);
- 
+      window.removeEventListener('blur', blur);
+      this.canvas.removeEventListener('pointerdown', down);
+      this.canvas.removeEventListener('pointermove', move);
+      this.canvas.removeEventListener('pointerup', up);
+      this.canvas.removeEventListener('pointercancel', up);
+      this.canvas.removeEventListener('wheel', wheel);
+    });
+  }
+}

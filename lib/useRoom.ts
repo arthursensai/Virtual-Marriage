@@ -44,6 +44,7 @@ export function useRoom(code: string, id: string) {
     ch.on('broadcast', { event: 'react' }, ({ payload }) => handlers.current.react?.(payload));
     ch.on('broadcast', { event: 'chat' }, ({ payload }) => handlers.current.chat?.(payload));
     ch.on('broadcast', { event: 'pos' }, ({ payload }) => handlers.current.pos?.(payload));
+    ch.on('broadcast', { event: 'music' }, ({ payload }) => handlers.current.music?.(payload));
     ch.subscribe(async (s) => {
       if (s === 'SUBSCRIBED') {
         ready.current = true;
@@ -70,11 +71,11 @@ export function useRoom(code: string, id: string) {
     }, 120);
   }, []);
 
-  const send = useCallback((event: 'react' | 'chat' | 'pos', payload: unknown) => {
+  const send = useCallback((event: 'react' | 'chat' | 'pos' | 'music', payload: unknown) => {
     void chRef.current?.send({ type: 'broadcast', event, payload });
   }, []);
 
-  const on = useCallback((event: 'react' | 'chat' | 'pos', fn: Handler) => {
+  const on = useCallback((event: 'react' | 'chat' | 'pos' | 'music', fn: Handler) => {
     handlers.current[event] = fn;
   }, []);
 
