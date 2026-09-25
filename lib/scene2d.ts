@@ -81,6 +81,8 @@ export class WeddingScene {
   private wasMoving = false;
 
   private ceremony: SceneCeremony | null = null;
+  private consentYes = { groom: false, bride: false };
+  private consentAt = { groom: 0, bride: 0 };
   private lastKey = '';
   private night = true;
   private viewShift = 0;
@@ -179,6 +181,13 @@ export class WeddingScene {
   setViewShift(f: number) {
     this.viewShift = f;
   }
+  /** خطوة "الإيجاب والقبول": من قال نعم ومتى، لتوجيه الكاميرا نحوه */
+  setConsent(groomYes: boolean, brideYes: boolean) {
+    const now = performance.now();
+    if (groomYes && !this.consentYes.groom) this.consentAt.groom = now;
+    if (brideYes && !this.consentYes.bride) this.consentAt.bride = now;
+    this.consentYes = { groom: groomYes, bride: brideYes };
+  }
 
   react(id: string, kind: ReactKind) {
     const now = performance.now();
@@ -235,9 +244,25 @@ export class WeddingScene {
   private crisp() {
     return !this.overview && this.zoomMul === null;
   }
-  private targetS() {
+  private targetS(step: number) {
     if (this.overview) return this.fitS();
-    return this.baseS() * (this.zoomMul ?? 1);
+    const base = this.baseS() * (this.zoomMul ?? 1);
+    const focus = this.consentFocus(step);
+    return focus ? base * focus.zoom : base;
+  }
+
+  /** أثناء "الإيجاب والقبول" فقط: مين تركّز عليه الكاميرا الآن، أو null = لقطة الاثنين معًا */
+  private consentFocus(step: number): { id: 'groom' | 'bride'; zoom: number } | null {
+    if (step !== 2) return null;
+    const now = performance.now();
+    const CELEBRATE = 1800;
+    const gSince = this.consentYes.groom ? now - this.consentAt.groom : Infinity;
+    const bSince = this.consentYes.bride ? now - this.consentAt.bride : Infinity;
+    if (gSince < CELEBRATE) return { id: 'groom', zoom: 1.35 };
+    if (bSince < CELEBRATE) return { id: 'bride', zoom: 1.35 };
+    if (this.consentYes.groom && !this.consentYes.bride) return { id: 'bride', zoom: 1.22 };
+    if (this.consentYes.bride && !this.consentYes.groom) return { id: 'groom', zoom: 1.22 };
+    return null;
   }
 
   private camGoal(step: number, S: number): { cx: number; cz: number } {
@@ -247,6 +272,11 @@ export class WeddingScene {
     if (step === 0) {
       const g = this.ents.get('groom');
       cz = g ? g.z : 4;
+    } else if (step === 2) {
+      const focus = this.consentFocus(step);
+      const e = focus ? this.ents.get(focus.id) : null;
+      cx = e ? e.x : 0;
+      cz = e ? e.z : -0.3;
     } else if (step >= 1) {
       cz = -0.3;
     } else {
@@ -408,7 +438,7 @@ export class WeddingScene {
     const step = this.ceremonyPose();
 
     /* الكاميرا: تتبّع اللاعب / العرض الشامل / لقطات الحفل */
-    const S = this.targetS();
+    const S = this.targetS(step);
     const goal = this.camGoal(step, S);
     if (!this.camInit) {
       this.cam = { cx: goal.cx, cz: goal.cz, S };

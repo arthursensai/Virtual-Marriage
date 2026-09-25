@@ -265,6 +265,13 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
     prevStep.current = step;
   }, [step]);
 
+  const prevGates = useRef({ ga: view.groom.gates.a, ba: view.bride.gates.a, gs: view.groom.gates.s, bs: view.bride.gates.s });
+  useEffect(() => {
+    const cur = { ga: view.groom.gates.a, ba: view.bride.gates.a, gs: view.groom.gates.s, bs: view.bride.gates.s };
+    if ((cur.ga && !prevGates.current.ga) || (cur.ba && !prevGates.current.ba) || (cur.gs && !prevGates.current.gs) || (cur.bs && !prevGates.current.bs)) ding();
+    prevGates.current = cur;
+  }, [view.groom.gates.a, view.bride.gates.a, view.groom.gates.s, view.bride.gates.s]);
+
   const onStep = useCallback((s: number, late: boolean) => {
     if (late) return;
     if (s === 5) chime();
@@ -294,7 +301,6 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
   const toggleNight = () => setCer((c) => ({ ...c, night: !c.night }));
 
   const mark = (who: 'me' | 'proxy', key: 'a' | 's') => {
-    ding();
     if (who === 'me') {
       setMyGates((g) => {
         const base = g.round === round ? g : { a: false, s: false, round };
@@ -308,9 +314,9 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
     }
   };
   const canClickG = isGroom;
-  const canClickB = role === 'bride' || (isGroom && !view.brideOnline);
+  const canClickB = role === 'bride';
   const clickG = (k: 'a' | 's') => mark('me', k);
-  const clickB = (k: 'a' | 's') => mark(role === 'bride' ? 'me' : 'proxy', k);
+  const clickB = (k: 'a' | 's') => mark('me', k);
 
   const canNext =
     step === 0 ? elapsed >= WALK_MS :
@@ -377,6 +383,7 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
         onMove={onMove}
         guests={view.guests}
         ceremony={ceremony}
+        consent={{ groomYes: view.groom.gates.a, brideYes: view.bride.gates.a }}
         night={night}
         viewShift={viewShift}
         onStep={onStep}

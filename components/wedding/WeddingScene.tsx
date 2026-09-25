@@ -18,6 +18,8 @@ interface Props {
   onMove: (x: number, z: number, r: number, moving: boolean) => void;
   guests: GuestInfo[];
   ceremony: Ceremony | null;
+  /** خطوة الإيجاب والقبول: من قال نعم، لتوجيه الكاميرا */
+  consent?: { groomYes: boolean; brideYes: boolean };
   night: boolean;
   viewShift: number;
   onStep: (step: number, late: boolean) => void;
@@ -82,6 +84,9 @@ export default function Stage(p: Props) {
     sceneRef.current?.setCeremony(p.ceremony);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ck]);
+  useEffect(() => {
+    sceneRef.current?.setConsent(!!p.consent?.groomYes, !!p.consent?.brideYes);
+  }, [p.consent?.groomYes, p.consent?.brideYes]);
   useEffect(() => {
     sceneRef.current?.setLocal(p.localId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
