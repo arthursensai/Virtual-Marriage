@@ -69,6 +69,22 @@ export function useMusicSync(opts: UseMusicSyncOpts) {
     musicManager.applyRemote(state.trackId, state.playing, pos);
   }, [state]);
 
+  /* إعادة مزامنة دورية من الجهاز المتحكّم فقط: تصحّح انحراف الساعة بين الجوالين
+     وأي انجراف تراكمي بالتشغيل، بدل ما تعتمد فقط على لحظات التشغيل/الإيقاف/التبديل */
+  useEffect(() => {
+    if (!canControl || !roomOnline || !state.playing || !state.trackId) return;
+    const iv = setInterval(() => {
+      setState((s) => {
+        if (!s.playing || !s.trackId) return s;
+        const pos = computePosition(s, Date.now());
+        const next = { ...s, startedAt: Date.now(), positionAtStart: pos, updatedAt: Date.now() };
+        roomSend('music', next);
+        return next;
+      });
+    }, 12000);
+    return () => clearInterval(iv);
+  }, [canControl, roomOnline, state.playing, state.trackId, roomSend]);
+
   const broadcast = useCallback(
     (next: MusicState) => {
       setState(next);

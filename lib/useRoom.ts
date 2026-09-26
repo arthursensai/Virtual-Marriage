@@ -62,13 +62,29 @@ export function useRoom(code: string, id: string) {
     };
   }, [code, id]);
 
+  const lastSent = useRef(0);
   const update = useCallback((p: Presence) => {
     latest.current = p;
     if (!ready.current) return;
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
+    // حد Supabase على الخطة المجانية: حوالي ٥ تحديثات حضور لكل عميل كل ٣٠ث.
+    // أي أسرع من هذا كان يُسقط بصمت بدل ما يُرسل — فيسبب "ما يتحدّث صح".
+    const MIN_GAP = 6500;
+    const now = Date.now();
+    const wait = MIN_GAP - (now - lastSent.current);
+    if (wait <= 0) {
+      lastSent.current = now;
+      if (timer.current) {
+        clearTimeout(timer.current);
+        timer.current = null;
+      }
       void chRef.current?.track(latest.current as Presence);
-    }, 120);
+    } else if (!timer.current) {
+      timer.current = setTimeout(() => {
+        timer.current = null;
+        lastSent.current = Date.now();
+        void chRef.current?.track(latest.current as Presence);
+      }, wait);
+    }
   }, []);
 
   const send = useCallback((event: 'react' | 'chat' | 'pos' | 'music', payload: unknown) => {

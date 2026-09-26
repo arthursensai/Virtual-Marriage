@@ -4,6 +4,7 @@ import { clamp, hash } from './util';
 import { directionOf } from './pixel/avatar';
 import { getAvatarSprite } from './avatar/sprite';
 import { BACKSTAGE_MAX_Z, BOUNDS, HU, OBSTACLES_2D, U, WU, X0, Z0, drawStationLabels, renderVenue, type DrawItem, type View } from './pixel/venue';
+import { OFFICIANT_LOOK, OFFICIANT_NPC } from './npc/officiant';
 // أنواع فقط من ملف three.js (تُحذف عند البناء، فلا يُحمَّل three في نسخة 2D)
 import type { ReactKind, SceneActor, SceneCeremony, SceneGuest, SceneOptions } from './scene';
 
@@ -95,6 +96,7 @@ export class WeddingScene {
   private reactions = new Map<string, Reaction>();
   /** ارتفاع لوحة الاسم فوق القدمين (بكسلات CSS) لكل لاعب، يحدَّث أثناء الرسم */
   private tops = new Map<string, number>();
+  private officiantTop = 0;
   private confetti: { x: number; y: number; vx: number; vy: number; c: string; life: number }[] = [];
 
   private raf = 0;
@@ -511,6 +513,17 @@ export class WeddingScene {
         },
       };
     });
+    items.push({
+      x: OFFICIANT_NPC.x,
+      z: OFFICIANT_NPC.z,
+      draw: (g, sx, sy, kk) => {
+        const sp = getAvatarSprite(OFFICIANT_LOOK, 'down', false, tSec);
+        const f = sp.scale;
+        const kUse = view.crisp ? Math.max(1, Math.round(kk * dpr * f)) / dpr : kk * f;
+        g.drawImage(sp.cv, snap(sx - sp.ax * kUse), snap(sy - sp.ay * kUse), sp.cv.width * kUse, sp.cv.height * kUse);
+        this.officiantTop = sp.top * kUse;
+      },
+    });
     renderVenue(ctx, view, items);
 
     /* لافتات المحطات، ثم أسماء اللاعبين والتفاعلات فوق كل شيء */
@@ -547,9 +560,67 @@ export class WeddingScene {
         }
       });
 
+    if (step === 1) {
+      const op = P(OFFICIANT_NPC.x, OFFICIANT_NPC.z);
+      const otop = op.y - (this.officiantTop || 32 * kArt);
+      this.drawSpeech(ctx, op.x, otop - 4, this.officiantText(), fontPx);
+    }
+
     this.drawConfetti(dt);
     ctx.restore();
   };
+
+  /** نص كلمة المأذون، ثابت لكل الحاضرين (لا يعتمد على من يشاهد) */
+  private officiantText() {
+    const g = this.actors.groom?.name ?? 'العريس';
+    const b = this.actors.bride?.name ?? 'العروسة';
+    return `بسم الله، نجتمع اليوم لنشهد على عهدٍ بين ${g} و${b}. عهدٌ يبدأ بالحب، ويُكتب بالثقة، ويدوم بالوفاء. فليكن هذا اليوم بداية قصتكما معًا 💍`;
+  }
+
+  private speechCache = { key: '', lines: [] as string[] };
+
+  /** فقاعة كلام تكتب حرفًا حرفًا فوق نقطة معيّنة، بتفاف تلقائي للسطور (محسوبة مرة واحدة فقط لكل تغيّر) */
+  private drawSpeech(g: CanvasRenderingContext2D, x: number, bottomY: number, full: string, fontPx: number) {
+    const el = this.ceremony ? Math.max(0, Date.now() - this.ceremony.stepStartedAt) : 0;
+    const CHAR_MS = 42;
+    const shown = full.slice(0, Math.floor(el / CHAR_MS));
+    if (!shown) return;
+    g.save();
+    g.font = `600 ${Math.round(fontPx * 0.95)}px Tajawal, Tahoma, sans-serif`;
+    const maxW = 230;
+    if (this.speechCache.key !== shown) {
+      const words = shown.split(' ');
+      const lines: string[] = [];
+      let cur = '';
+      for (const w of words) {
+        const test = cur ? cur + ' ' + w : w;
+        if (g.measureText(test).width > maxW && cur) {
+          lines.push(cur);
+          cur = w;
+        } else cur = test;
+      }
+      if (cur) lines.push(cur);
+      this.speechCache = { key: shown, lines };
+    }
+    const lines = this.speechCache.lines;
+    const lh = fontPx * 1.5;
+    const boxW = Math.min(maxW + 28, Math.max(...lines.map((l) => g.measureText(l).width)) + 28);
+    const boxH = lines.length * lh + 18;
+    const boxY = bottomY - boxH;
+    g.fillStyle = 'rgba(10,8,4,.88)';
+    g.strokeStyle = '#d8b55a';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    if (typeof g.roundRect === 'function') g.roundRect(x - boxW / 2, boxY, boxW, boxH, 12);
+    else g.rect(x - boxW / 2, boxY, boxW, boxH);
+    g.fill();
+    g.stroke();
+    g.fillStyle = '#ffe9a8';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    lines.forEach((l, i) => g.fillText(l, x, boxY + 12 + lh * i + lh / 2));
+    g.restore();
+  }
 
   /* ---------- التحكم ---------- */
   private bindControls() {
