@@ -203,8 +203,11 @@ export class WeddingScene {
   }
 
   private burstConfetti() {
+    const CAP = 240; // يمنع تراكم غير محدود لو صفّق/احتفل كذا ضيف بنفس الوقت
+    const room = Math.min(80, Math.max(0, CAP - this.confetti.length));
+    if (room === 0) return;
     const pal = ['#ff4d6d', '#ffd166', '#06d6a0', '#4cc9f0', '#b388ff', '#ffffff'];
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < room; i++) {
       this.confetti.push({
         x: this.w / 2 + (Math.random() - 0.5) * this.w * 0.6,
         y: -20,

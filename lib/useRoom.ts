@@ -87,11 +87,11 @@ export function useRoom(code: string, id: string) {
     }
   }, []);
 
-  const send = useCallback((event: 'react' | 'chat' | 'pos' | 'music', payload: unknown) => {
+  const send = useCallback((event: 'react' | 'chat' | 'pos' | 'music' | 'ceremony' | 'gates', payload: unknown) => {
     void chRef.current?.send({ type: 'broadcast', event, payload });
   }, []);
 
-  const on = useCallback((event: 'react' | 'chat' | 'pos' | 'music', fn: Handler) => {
+  const on = useCallback((event: 'react' | 'chat' | 'pos' | 'music' | 'ceremony' | 'gates', fn: Handler) => {
     handlers.current[event] = fn;
   }, []);
 

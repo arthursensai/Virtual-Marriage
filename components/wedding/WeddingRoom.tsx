@@ -237,7 +237,16 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [nearDJ, chatOpen, panelOpen, djOpen]);
 
-  const ceremony = view.ceremony;
+  /* ---- تقدّم الحفل: بثّ فوري بدل الاعتماد على "الحضور" البطيء (محجوز لأشياء غير حرجة زمنيًا) ---- */
+  const [remoteCer, setRemoteCer] = useState<Ceremony | null>(null);
+  useEffect(() => {
+    roomOn('ceremony', (pl) => setRemoteCer(pl as Ceremony));
+  }, [roomOn]);
+  useEffect(() => {
+    if (role === 'groom' && room.status === 'online') roomSend('ceremony', cer);
+  }, [role, room.status, cer, roomSend]);
+
+  const ceremony = role === 'groom' ? cer : remoteCer ?? view.ceremony;
   const step = ceremony?.step ?? -1;
   const round = ceremony?.round ?? 0;
   const night = ceremony?.night ?? true;
@@ -265,12 +274,26 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
     prevStep.current = step;
   }, [step]);
 
-  const prevGates = useRef({ ga: view.groom.gates.a, ba: view.bride.gates.a, gs: view.groom.gates.s, bs: view.bride.gates.s });
+  /* ---- الإيجاب/القبول والتوقيع: بثّ فوري كمان (نفس سبب تقدّم الحفل) ---- */
+  const [remoteGates, setRemoteGates] = useState<{ groom?: Gates; bride?: Gates }>({});
   useEffect(() => {
-    const cur = { ga: view.groom.gates.a, ba: view.bride.gates.a, gs: view.groom.gates.s, bs: view.bride.gates.s };
+    roomOn('gates', (pl) => {
+      const p = pl as { role: 'groom' | 'bride'; gates: Gates };
+      if (p?.role !== 'groom' && p?.role !== 'bride') return;
+      setRemoteGates((s) => ({ ...s, [p.role]: p.gates }));
+    });
+  }, [roomOn]);
+  const groomA = role === 'groom' ? myGates.a : remoteGates.groom?.round === round ? remoteGates.groom.a : view.groom.gates.a;
+  const groomS = role === 'groom' ? myGates.s : remoteGates.groom?.round === round ? remoteGates.groom.s : view.groom.gates.s;
+  const brideA = role === 'bride' ? myGates.a : remoteGates.bride?.round === round ? remoteGates.bride.a : view.bride.gates.a;
+  const brideS = role === 'bride' ? myGates.s : remoteGates.bride?.round === round ? remoteGates.bride.s : view.bride.gates.s;
+
+  const prevGates = useRef({ ga: groomA, ba: brideA, gs: groomS, bs: brideS });
+  useEffect(() => {
+    const cur = { ga: groomA, ba: brideA, gs: groomS, bs: brideS };
     if ((cur.ga && !prevGates.current.ga) || (cur.ba && !prevGates.current.ba) || (cur.gs && !prevGates.current.gs) || (cur.bs && !prevGates.current.bs)) ding();
     prevGates.current = cur;
-  }, [view.groom.gates.a, view.bride.gates.a, view.groom.gates.s, view.bride.gates.s]);
+  }, [groomA, brideA, groomS, brideS]);
 
   const onStep = useCallback((s: number, late: boolean) => {
     if (late) return;
@@ -304,7 +327,9 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
     if (who === 'me') {
       setMyGates((g) => {
         const base = g.round === round ? g : { a: false, s: false, round };
-        return { ...base, [key]: true } as Gates;
+        const next = { ...base, [key]: true } as Gates;
+        roomSend('gates', { role, gates: next });
+        return next;
       });
     } else {
       setProxy((p) => {
@@ -320,8 +345,8 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
 
   const canNext =
     step === 0 ? elapsed >= WALK_MS :
-    step === 2 ? view.groom.gates.a && view.bride.gates.a :
-    step === 4 ? view.groom.gates.s && view.bride.gates.s : true;
+    step === 2 ? groomA && brideA :
+    step === 4 ? groomS && brideS : true;
 
   /* ---- تفاعلات ---- */
   const react = (kind: ReactKind) => {
@@ -383,7 +408,7 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
         onMove={onMove}
         guests={view.guests}
         ceremony={ceremony}
-        consent={{ groomYes: view.groom.gates.a, brideYes: view.bride.gates.a }}
+        consent={{ groomYes: groomA, brideYes: brideA }}
         night={night}
         viewShift={viewShift}
         onStep={onStep}
@@ -510,11 +535,11 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
               <>
                 هل يقبل كل منكما الآخر، بكل نكاته وعاداته؟
                 <div className="gates">
-                  <button className={'gate' + (view.groom.gates.a ? ' ok' : '')} disabled={!canClickG || view.groom.gates.a} onClick={() => clickG('a')}>
-                    {view.groom.gates.a ? `✓ قبِل ${g}` : `قبلتُ يا ${g} ✅`}
+                  <button className={'gate' + (groomA ? ' ok' : '')} disabled={!canClickG || groomA} onClick={() => clickG('a')}>
+                    {groomA ? `✓ قبِل ${g}` : `قبلتُ يا ${g} ✅`}
                   </button>
-                  <button className={'gate' + (view.bride.gates.a ? ' ok' : '')} disabled={!canClickB || view.bride.gates.a} onClick={() => clickB('a')}>
-                    {view.bride.gates.a ? `✓ قبِلت ${b}` : `قبلتُ يا ${b} ✅`}
+                  <button className={'gate' + (brideA ? ' ok' : '')} disabled={!canClickB || brideA} onClick={() => clickB('a')}>
+                    {brideA ? `✓ قبِلت ${b}` : `قبلتُ يا ${b} ✅`}
                   </button>
                 </div>
               </>
@@ -529,11 +554,11 @@ export default function WeddingRoom({ code, me }: { code: string; me: Me }) {
               <>
                 ضعا توقيعكما على العقد الودّي أمام الجميع.
                 <div className="gates">
-                  <button className={'gate' + (view.groom.gates.s ? ' ok' : '')} disabled={!canClickG || view.groom.gates.s} onClick={() => clickG('s')}>
-                    {view.groom.gates.s ? <><span className="sig">{g}</span> ✓</> : `توقيع ${g} ✍️`}
+                  <button className={'gate' + (groomS ? ' ok' : '')} disabled={!canClickG || groomS} onClick={() => clickG('s')}>
+                    {groomS ? <><span className="sig">{g}</span> ✓</> : `توقيع ${g} ✍️`}
                   </button>
-                  <button className={'gate' + (view.bride.gates.s ? ' ok' : '')} disabled={!canClickB || view.bride.gates.s} onClick={() => clickB('s')}>
-                    {view.bride.gates.s ? <><span className="sig">{b}</span> ✓</> : `توقيع ${b} ✍️`}
+                  <button className={'gate' + (brideS ? ' ok' : '')} disabled={!canClickB || brideS} onClick={() => clickB('s')}>
+                    {brideS ? <><span className="sig">{b}</span> ✓</> : `توقيع ${b} ✍️`}
                   </button>
                 </div>
               </>
