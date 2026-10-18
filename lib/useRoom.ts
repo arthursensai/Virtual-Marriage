@@ -20,6 +20,8 @@ export function useRoom(code: string, id: string) {
   const latest = useRef<Presence | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handlers = useRef<Record<string, Handler>>({});
+  // Keep only the latest position if movement occurs before the channel is ready.
+  const pendingPos = useRef<unknown | null>(null);
 
   useEffect(() => {
     const sb = getSupabase();
@@ -50,6 +52,18 @@ export function useRoom(code: string, id: string) {
         ready.current = true;
         setStatus('online');
         if (latest.current) await ch.track(latest.current);
+
+        // A final position sent before SUBSCRIBED must not be lost.
+        if (pendingPos.current !== null) {
+          const payload = pendingPos.current;
+          pendingPos.current = null;
+          const result = await ch.send({
+            type: 'broadcast',
+            event: 'pos',
+            payload,
+          });
+          if (result !== 'ok') pendingPos.current = payload;
+        }
       } else if (s === 'CHANNEL_ERROR' || s === 'TIMED_OUT') {
         setStatus('error');
       }
@@ -88,7 +102,16 @@ export function useRoom(code: string, id: string) {
   }, []);
 
   const send = useCallback((event: 'react' | 'chat' | 'pos' | 'music' | 'ceremony' | 'gates', payload: unknown) => {
-    void chRef.current?.send({ type: 'broadcast', event, payload });
+    const channel = chRef.current;
+
+    // Position is replaceable state: queue the newest one while connecting.
+    if (event === 'pos' && (!ready.current || !channel)) {
+      pendingPos.current = payload;
+      return;
+    }
+
+    if (!ready.current || !channel) return;
+    void channel.send({ type: 'broadcast', event, payload });
   }, []);
 
   const on = useCallback((event: 'react' | 'chat' | 'pos' | 'music' | 'ceremony' | 'gates', fn: Handler) => {
