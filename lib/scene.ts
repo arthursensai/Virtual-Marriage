@@ -432,10 +432,6 @@ export class WeddingScene {
     e.trot = r;
     e.moving = moving;
     e.seen = performance.now();
-    if (Math.hypot(e.tx - e.x, e.tz - e.z) > 6) {
-      e.x = e.tx;
-      e.z = e.tz;
-    }
   }
 
   private scripted(id: string) {
