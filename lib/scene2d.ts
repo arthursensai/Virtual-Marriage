@@ -224,7 +224,8 @@ export class WeddingScene {
     if (!par) return;
     this.w = Math.max(1, par.clientWidth);
     this.h = Math.max(1, par.clientHeight);
-    this.dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const deviceDpr = window.devicePixelRatio || 1;
+    this.dpr = Math.min(deviceDpr, this.w < 768 ? 1.5 : 2);
     this.canvas.width = Math.round(this.w * this.dpr);
     this.canvas.height = Math.round(this.h * this.dpr);
     this.canvas.style.width = `${this.w}px`;
@@ -434,6 +435,10 @@ export class WeddingScene {
   /* ---------- الحلقة الرئيسية ---------- */
   private tick = (nowMs: number) => {
     this.raf = requestAnimationFrame(this.tick);
+
+    // Limit render work to ~30 FPS to reduce load on mobile devices.
+    if (this.lastT && nowMs - this.lastT < 1000 / 30) return;
+
     const dt = Math.min((nowMs - (this.lastT || nowMs)) / 1000, 0.05);
     this.lastT = nowMs;
     const tSec = (nowMs - this.startT) / 1000;
