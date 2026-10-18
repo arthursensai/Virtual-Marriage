@@ -24,15 +24,23 @@ export interface SceneGuest {
   look: Look;
   pos?: Pos;
 }
+interface RemoteSnapshot {
+  at: number;
+  x: number;
+  z: number;
+  r: number;
+  moving: boolean;
+}
 interface Ent {
   x: number;
   z: number;
-  tx: number;
-  tz: number;
   rot: number;
   trot: number;
   moving: boolean;
   seen: number;
+  snapshots: RemoteSnapshot[];
+  jitter: number;
+  interpolationDelay: number;
 }
 export interface SceneCeremony {
   round: number;
@@ -41,13 +49,19 @@ export interface SceneCeremony {
 }
 export interface SceneOptions {
   onStep?: (step: number, late: boolean) => void;
-  /** يُستدعى لحركة اللاعب المحلي (≈8 مرات/ث أثناء الحركة، ومرة عند التوقف) */
+  /** يُستدعى لحركة اللاعب المحلي (حتى ≈12.5 مرة/ث للاعبين، ومرة عند التوقف) */
   onMove?: (x: number, z: number, r: number, moving: boolean) => void;
 }
 
 const SPEED = 3.4;
 const PLAYER_R = 0.28;
-const SEND_MS = 120;
+const SEND_MS = 80;
+const ROOM_BROADCAST_BUDGET_PER_SECOND = 80;
+const INTERPOLATION_DELAY_MS = 100;
+const MAX_INTERPOLATION_DELAY_MS = 400;
+const MAX_EXTRAPOLATION_MS = 40;
+const MAX_SNAPSHOTS = 12;
+const REMOTE_MOVING_TIMEOUT_MS = 450;
 const angDiff = (a: number, b: number) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
 
 export const WALK_MS = 7000;
@@ -366,7 +380,7 @@ export class WeddingScene {
     attachLabel(p, a.name, 2.2, 1, true);
     if (!this.ents.has(role)) {
       const sp = a.pos ?? { x: role === 'groom' ? -0.85 : 0.85, z: -0.5, r: role === 'groom' ? 0.25 : -0.25 };
-      this.ents.set(role, { x: sp.x, z: sp.z, tx: sp.x, tz: sp.z, rot: sp.r, trot: sp.r, moving: false, seen: 0 });
+      this.ents.set(role, { x: sp.x, z: sp.z, rot: sp.r, trot: sp.r, moving: false, seen: 0, snapshots: [], jitter: 0, interpolationDelay: INTERPOLATION_DELAY_MS });
     }
     if (pos) {
       p.root.position.copy(pos);
@@ -408,7 +422,7 @@ export class WeddingScene {
       if (this.ents.has(g.id)) return;
       const h = hash(g.id);
       const sp = g.pos ?? { x: ((h % 9) - 4) * 0.45, z: 11.6 + ((h >> 4) % 3) * 0.7, r: Math.PI };
-      this.ents.set(g.id, { x: sp.x, z: sp.z, tx: sp.x, tz: sp.z, rot: sp.r, trot: sp.r, moving: false, seen: 0 });
+      this.ents.set(g.id, { x: sp.x, z: sp.z, rot: sp.r, trot: sp.r, moving: false, seen: 0, snapshots: [], jitter: 0, interpolationDelay: INTERPOLATION_DELAY_MS });
     });
     const keep = new Set<string>(['groom', 'bride', ...shown.map((g) => g.id)]);
     for (const id of Array.from(this.ents.keys())) if (!keep.has(id)) this.ents.delete(id);
@@ -427,11 +441,40 @@ export class WeddingScene {
   remotePos(id: string, x: number, z: number, r: number, moving: boolean) {
     const e = this.ents.get(id);
     if (!e || id === this.localId) return;
-    e.tx = clamp(x, BOUNDS.minX, BOUNDS.maxX);
-    e.tz = clamp(z, BOUNDS.minZ, BOUNDS.maxZ);
-    e.trot = r;
+
+    const at = performance.now();
+    const sample: RemoteSnapshot = {
+      at,
+      x: clamp(x, BOUNDS.minX, BOUNDS.maxX),
+      z: clamp(z, BOUNDS.minZ, BOUNDS.maxZ),
+      r,
+      moving,
+    };
+    const snapshots = e.snapshots;
+    const previous = snapshots[snapshots.length - 1];
+    const expectedGap = this.positionSendInterval();
+    if (previous) {
+      const gap = at - previous.at;
+      if (gap > 0) {
+        // Increase the buffer when packet arrival timing becomes irregular; let it shrink slowly again.
+        e.jitter += (Math.abs(gap - expectedGap) - e.jitter) * 0.1;
+        e.interpolationDelay = clamp(
+          Math.max(INTERPOLATION_DELAY_MS, expectedGap + 20 + e.jitter * 2),
+          INTERPOLATION_DELAY_MS,
+          MAX_INTERPOLATION_DELAY_MS,
+        );
+      }
+    } else {
+      // The first snapshot establishes the correct spawn position; later updates are interpolated.
+      e.x = sample.x;
+      e.z = sample.z;
+      e.rot = sample.r;
+    }
+
+    snapshots.push(sample);
+    if (snapshots.length > MAX_SNAPSHOTS) snapshots.shift();
     e.moving = moving;
-    e.seen = performance.now();
+    e.seen = at;
   }
 
   private scripted(id: string) {
@@ -452,6 +495,12 @@ export class WeddingScene {
       }
     }
     return { x: nx, z: nz };
+  }
+
+  private positionSendInterval() {
+    // Broadcast fan-out counts toward Supabase's message budget, so slow updates as a room grows.
+    const participants = Math.max(2, 2 + this.guests.size);
+    return Math.max(SEND_MS, Math.ceil((participants * participants * 1000) / ROOM_BROADCAST_BUDGET_PER_SECOND));
   }
 
   private stepLocal(dt: number, nowP: number) {
@@ -485,21 +534,70 @@ export class WeddingScene {
     e.moving = moving;
     e.rot += angDiff(e.rot, e.trot) * (1 - Math.pow(0.0005, dt));
     this.ring.visible = true;
-    if ((moving && nowP - this.lastSend > SEND_MS) || (!moving && this.wasMoving)) {
+    if ((moving && nowP - this.lastSend > this.positionSendInterval()) || (!moving && this.wasMoving)) {
       this.lastSend = nowP;
       this.opts.onMove?.(Math.round(e.x * 100) / 100, Math.round(e.z * 100) / 100, Math.round(e.rot * 100) / 100, moving);
     }
     this.wasMoving = moving;
   }
 
-  private updateEnts(dt: number, nowP: number) {
-    const k = 1 - Math.pow(0.0008, dt);
+  private updateEnts(_dt: number, nowP: number) {
     this.ents.forEach((e, id) => {
       if (id === this.localId) return;
-      e.x += (e.tx - e.x) * k;
-      e.z += (e.tz - e.z) * k;
-      e.rot += angDiff(e.rot, e.trot) * k;
-      if (e.moving && nowP - e.seen > 450) e.moving = false;
+      const snapshots = e.snapshots;
+
+      if (snapshots.length) {
+        const renderAt = nowP - e.interpolationDelay;
+        // Keep the closest sample before renderAt and the next sample after it.
+        while (snapshots.length > 2 && snapshots[1].at <= renderAt) snapshots.shift();
+        const first = snapshots[0];
+
+        if (renderAt <= first.at) {
+          e.x = first.x;
+          e.z = first.z;
+          e.rot = first.r;
+          e.moving = first.moving;
+        } else {
+          let nextIndex = 1;
+          while (nextIndex < snapshots.length && snapshots[nextIndex].at < renderAt) nextIndex++;
+
+          if (nextIndex < snapshots.length) {
+            const a = snapshots[nextIndex - 1];
+            const b = snapshots[nextIndex];
+            const span = Math.max(1, b.at - a.at);
+            const t = clamp((renderAt - a.at) / span, 0, 1);
+            e.x = a.x + (b.x - a.x) * t;
+            e.z = a.z + (b.z - a.z) * t;
+            e.rot = a.r + angDiff(a.r, b.r) * t;
+            e.moving = a.moving || b.moving;
+          } else {
+            const last = snapshots[snapshots.length - 1];
+            e.x = last.x;
+            e.z = last.z;
+            e.rot = last.r;
+            e.moving = last.moving;
+
+            // A tiny, speed-limited extrapolation hides brief jitter without letting characters fly away.
+            const previous = snapshots.length > 1 ? snapshots[snapshots.length - 2] : null;
+            if (previous && last.moving) {
+              const sampleSeconds = Math.max(1, last.at - previous.at) / 1000;
+              let vx = (last.x - previous.x) / sampleSeconds;
+              let vz = (last.z - previous.z) / sampleSeconds;
+              const speed = Math.hypot(vx, vz);
+              if (speed > SPEED) {
+                const scale = SPEED / speed;
+                vx *= scale;
+                vz *= scale;
+              }
+              const aheadSeconds = clamp(renderAt - last.at, 0, MAX_EXTRAPOLATION_MS) / 1000;
+              e.x = clamp(last.x + vx * aheadSeconds, BOUNDS.minX, BOUNDS.maxX);
+              e.z = clamp(last.z + vz * aheadSeconds, BOUNDS.minZ, BOUNDS.maxZ);
+            }
+          }
+        }
+      }
+
+      if (e.moving && nowP - e.seen > REMOTE_MOVING_TIMEOUT_MS) e.moving = false;
     });
   }
 
