@@ -206,22 +206,45 @@ function Room({ code, me }: { code: string; me: Me }) {
 
   /* ---- الحركة: من أتحكم به، وإرسال موضعي واستقبال مواضع الآخرين (مؤقتة عبر Broadcast) ---- */
   const localId = role === 'guest' ? id : role;
+  const rosterRef = useRef(roster);
+  rosterRef.current = roster;
+  const pendingPos = useRef<Record<string, { id: string; x: number; z: number; r: number; m: boolean }>>({});
+
+  const flushPendingPositions = useCallback(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    for (const [peerId, q] of Object.entries(pendingPos.current)) {
+      const r = rosterRef.current[peerId];
+      if (!r) continue;
+      stage.remotePos(r === 'guest' ? peerId : r, q.x, q.z, q.r, !!q.m);
+      delete pendingPos.current[peerId];
+    }
+  }, []);
+
   const onMove = useCallback(
     (x: number, z: number, r: number, m: boolean) => {
+      flushPendingPositions();
       roomSend('pos', { id, x, z, r, m });
       if (!m) setMyPos({ x, z, r });
     },
-    [roomSend, id],
+    [roomSend, id, flushPendingPositions],
   );
-  const rosterRef = useRef(roster);
-  rosterRef.current = roster;
+
+  useEffect(() => {
+    flushPendingPositions();
+  }, [roster, flushPendingPositions]);
   useEffect(() => {
     roomOn('pos', (pl) => {
       const q = pl as { id: string; x: number; z: number; r: number; m: boolean };
       if (!q || q.id === id || typeof q.x !== 'number' || typeof q.z !== 'number') return;
       const r = rosterRef.current[q.id];
-      if (!r) return;
-      stageRef.current?.remotePos(r === 'guest' ? q.id : r, q.x, q.z, q.r, !!q.m);
+      if (!r || !stageRef.current) {
+        // Keep the latest position until the roster and scene are ready.
+        pendingPos.current[q.id] = q;
+        return;
+      }
+      stageRef.current.remotePos(r === 'guest' ? q.id : r, q.x, q.z, q.r, !!q.m);
     });
   }, [roomOn, id]);
   const ceremony = view.ceremony;

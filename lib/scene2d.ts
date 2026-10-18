@@ -75,6 +75,8 @@ export class WeddingScene {
   private actorKey = { groom: '', bride: '' };
   private guests = new Map<string, { key: string; rec: ActorRec }>();
   private ents = new Map<string, Ent>();
+  // Latest remote positions received before an entity has been created.
+  private pendingRemote = new Map<string, { x: number; z: number; r: number; moving: boolean }>();
   private localId: string | null = null;
   private input = { x: 0, y: 0 };
   private keys = { u: 0, d: 0, l: 0, r: 0 };
@@ -132,6 +134,7 @@ export class WeddingScene {
     if (!this.ents.has(role)) {
       const sp = a.pos ?? { x: role === 'groom' ? -0.7 : 0.7, z: 16, r: role === 'groom' ? Math.PI / 2 : Math.PI * 1.5 };
       this.ents.set(role, { x: sp.x, z: sp.z, tx: sp.x, tz: sp.z, rot: sp.r, trot: sp.r, moving: false, seen: 0 });
+      this.applyPendingRemote(role);
     }
   }
 
@@ -150,6 +153,7 @@ export class WeddingScene {
       const h = hash(g.id);
       const sp = g.pos ?? { x: ((h % 9) - 4) * 0.45, z: 11.6 + ((h >> 4) % 3) * 0.7, r: Math.PI };
       this.ents.set(g.id, { x: sp.x, z: sp.z, tx: sp.x, tz: sp.z, rot: sp.r, trot: sp.r, moving: false, seen: 0 });
+      this.applyPendingRemote(g.id);
     });
     const keep = new Set<string>(['groom', 'bride', ...shown.map((g) => g.id)]);
     for (const id of Array.from(this.ents.keys())) if (!keep.has(id)) this.ents.delete(id);
@@ -164,9 +168,26 @@ export class WeddingScene {
     this.input.x = x;
     this.input.y = y;
   }
+  private applyPendingRemote(id: string) {
+    const p = this.pendingRemote.get(id);
+    if (!p) return;
+    this.pendingRemote.delete(id);
+    this.remotePos(id, p.x, p.z, p.r, p.moving);
+  }
+
   remotePos(id: string, x: number, z: number, r: number, moving: boolean) {
+    if (id === this.localId) return;
     const e = this.ents.get(id);
-    if (!e || id === this.localId) return;
+    if (!e) {
+      // A stop event may be the last event for a movement. Do not discard it
+      // just because the corresponding actor has not rendered yet.
+      if (this.pendingRemote.size >= 64 && !this.pendingRemote.has(id)) {
+        const oldest = this.pendingRemote.keys().next().value;
+        if (oldest) this.pendingRemote.delete(oldest);
+      }
+      this.pendingRemote.set(id, { x, z, r, moving });
+      return;
+    }
     e.tx = clamp(x, BOUNDS.minX, BOUNDS.maxX);
     e.tz = clamp(z, BOUNDS.minZ, this.maxZFor(id));
     e.trot = r;
